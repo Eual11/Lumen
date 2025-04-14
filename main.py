@@ -1,5 +1,6 @@
 import sys
-from PySide6.QtWidgets import QApplication, QLayout, QVBoxLayout, QWidget, QMainWindow
+from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtWidgets import QFileDialog
 from PySide6 import QtCore
 from app import LumenMainWindow,test
 from app.widgets.DicomViewer import DicomViewer
@@ -12,11 +13,36 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
 
 
-        self.view = DicomViewer("./res/dicom/vhm_head/")
-        self.view2 = DicomViewer("./res/dicom/vhm_head/")
+        self.view = DicomViewer()
+        self.view2 = DicomViewer()
 
         self.ui.vtkContainer.addWidget(self.view)
         self.ui.vtkContainer.addWidget(self.view2)
+
+
+        #NOTE: testing buttons and loading
+
+
+        self.ui.loadBtn.clicked.connect(lambda: self.load(0))
+        self.ui.renderBtn.clicked.connect(lambda: self.load(1))
+
+    def closeEvent(self, event) -> None:
+        self.view.cleanup()
+        self.view2.cleanup()
+        return super().closeEvent(event)
+
+    @QtCore.Slot()
+    def load(self, n):
+        dir = QFileDialog.getExistingDirectory(None, "Select Dicom Folder")
+
+        if(dir and n==0):
+            self.view.loadImage(dir)
+        if(dir and n==1):
+            self.view2.loadImage(dir)
+
+
+
+
 
 
 
@@ -30,7 +56,6 @@ def main():
 
     ui = MainWindow()
     ui.show()
-    ui.view.renderImage()
     sys.exit(app.exec())
 
 

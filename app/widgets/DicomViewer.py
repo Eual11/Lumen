@@ -1,19 +1,22 @@
+from typing import Optional
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QMessageBox
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import vtk
 import os
 
+from core import DicomLoader
+
 from .ImageViewerUI import Ui_ImageViewerUI
 
 
 class DicomViewer(QWidget):
-    def __init__(self,parent=None):
+    def __init__(self,source:Optional[vtk.vtkAlgorithmOutput]=None,parent=None):
         super().__init__(parent)
 
         self.ui =Ui_ImageViewerUI()
         self.ui.setupUi(self)
+        self.input_data_extent = 0,0,0,0,0,0
 
-        self.reader = None
         self.viewer = vtk.vtkImageViewer2()
         self.vtkInteractor = QVTKRenderWindowInteractor(self.ui.vtkParent)
 
@@ -27,13 +30,9 @@ class DicomViewer(QWidget):
 
         self.viewer.SetupInteractor(self.vtkInteractor)
         self.viewer.SetRenderWindow(self.vtkInteractor.GetRenderWindow())
-    
-        if(self.reader):
-            self.viewer.SetInputConnection(self.reader.GetOutputPort())
-        else:
-            self.viewer.SetInputConnection(None)
-        self.renderImage()
 
+        self.updateSource(source)
+    
     def renderImage(self):
         if(self.viewer):
             self.viewer.Render()
@@ -42,47 +41,25 @@ class DicomViewer(QWidget):
             self.viewer.SetSlice(idx)
             self.renderImage()
     def cleanup(self):
-        if(self.reader):
-            self.reader = None
         if(self.vtkInteractor):
             self.vtkInteractor.GetRenderWindow().Finalize()
 
-    def loadImage(self,path):
-        self.cleanup()
-
-        self.reader = vtk.vtkDICOMImageReader()
-
-        if(not os.path.exists(path)):
-            self.showErrorMessage("Directory doesn't exist", f"The dicom directory {path} doesn't exist")
-            return
-
-        if(os.path.isdir(path)):
-            self.reader.SetDirectoryName(path)
+    def updateSource(self, source:Optional[vtk.vtkAlgorithmOutput]):
+        self.source = source
+        if(source):
+            self.input_data_extent = source.GetProducer().GetOutput().GetExtent()
+            print(self.input_data_extent)
+            self.ui.sliceSlider.setMaximum(self.input_data_extent[-1])
+            self.ui.sliceSlider.setValue(0)
+            self.viewer.SetInputConnection(source)
+            self.viewer.Render()
         else:
-            self.showErrorMessage("Invalid Path", f"Path is not a directory")
-            return
-
-        try:
-            self.reader.Update()
-        except:
-            print("test")
-
-
-        if(self.reader.GetNumberOfOutputPorts()==0):
-            self.showErrorMessage("Error loading DICOM", f"Failed to load DICOM files from {path}")
-            return
-
-        if(self.reader):
-            self.ui.sliceSlider.setMaximum(self.reader.GetDataExtent()[-1])
-
-        #TODO: add panning and better controls
-        self.viewer.SetupInteractor(self.vtkInteractor)
-        self.viewer.SetRenderWindow(self.vtkInteractor.GetRenderWindow())
-
-
-        if(self.reader):
-            self.viewer.SetInputConnection(self.reader.GetOutputPort())
+            self.viewer.SetInputConnection(None)
         self.renderImage()
+
+
+
+
     def showErrorMessage(self, title, desc):
         QMessageBox.critical(self, title, desc)
 

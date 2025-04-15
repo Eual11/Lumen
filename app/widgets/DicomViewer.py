@@ -47,11 +47,10 @@ class DicomViewer(QWidget):
     def updateSource(self, source:Optional[vtk.vtkAlgorithmOutput]):
         self.source = source
         if(source):
-            self.input_data_extent = source.GetProducer().GetOutput().GetExtent()
-            print(self.input_data_extent)
-            self.ui.sliceSlider.setMaximum(self.input_data_extent[-1])
             self.ui.sliceSlider.setValue(0)
             self.viewer.SetInputConnection(source)
+            self.ui.sliceSlider.setMaximum(self.viewer.GetSliceMax())
+            self.viewer.GetRenderer().ResetCamera()
             self.viewer.Render()
         else:
             self.viewer.SetInputConnection(None)

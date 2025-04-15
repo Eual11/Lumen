@@ -43,13 +43,22 @@ class Renderer(QWidget):
         if(self.vtkWindow):
             self.vtkWindow.Finalize()
     def addActor(self, actor:vtk.vtkActor):
+        self.actors.append(actor)
         self.renderer.AddActor(actor)
-        
         self.renderer.ResetCamera()
         self.vtkWindow.Render()
     def addVolume(self, volume: vtk.vtkVolume):
         self.renderer.AddVolume(volume)
+        self.volumes.append(volume)
         self.renderer.ResetCamera()
+        self.vtkWindow.Render()
+
+    def reset(self):
+        for actor in self.actors:
+            self.renderer.RemoveActor(actor)
+        for volume in self.volumes:
+            self.renderer.RemoveVolume(volume)
+        self.vtkWindow.Render()
 
 
 

@@ -68,7 +68,6 @@ class Renderer(QWidget):
         writer = vtk.vtkOBJWriter()
         writer.SetFileName(filepath)
         writer.SetInputConnection(appedMapper.GetOutputPort())
-        print("model written")
         writer.Write()
 
     def reset(self):

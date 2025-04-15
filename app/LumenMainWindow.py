@@ -15,15 +15,15 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QLayout,
-    QMainWindow, QPushButton, QSizePolicy, QSpacerItem,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QHBoxLayout, QLabel,
+    QLayout, QMainWindow, QPushButton, QSizePolicy,
+    QSpacerItem, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(723, 517)
+        MainWindow.resize(897, 619)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -57,6 +57,24 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer)
 
+        self.label_2 = QLabel(self.centralwidget)
+        self.label_2.setObjectName(u"label_2")
+        font1 = QFont()
+        font1.setPointSize(10)
+        font1.setBold(True)
+        self.label_2.setFont(font1)
+
+        self.horizontalLayout_2.addWidget(self.label_2)
+
+        self.rendererSelect = QComboBox(self.centralwidget)
+        self.rendererSelect.addItem("")
+        self.rendererSelect.addItem("")
+        self.rendererSelect.addItem("")
+        self.rendererSelect.addItem("")
+        self.rendererSelect.setObjectName(u"rendererSelect")
+
+        self.horizontalLayout_2.addWidget(self.rendererSelect)
+
         self.renderBtn = QPushButton(self.centralwidget)
         self.renderBtn.setObjectName(u"renderBtn")
 
@@ -71,6 +89,11 @@ class Ui_MainWindow(object):
         self.resetBtn.setObjectName(u"resetBtn")
 
         self.horizontalLayout_2.addWidget(self.resetBtn)
+
+        self.saveObjBtn = QPushButton(self.centralwidget)
+        self.saveObjBtn.setObjectName(u"saveObjBtn")
+
+        self.horizontalLayout_2.addWidget(self.saveObjBtn)
 
 
         self.verticalLayout_3.addLayout(self.horizontalLayout_2)
@@ -92,8 +115,15 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Lumen", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Lumen", None))
+        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Renderer:", None))
+        self.rendererSelect.setItemText(0, QCoreApplication.translate("MainWindow", u"Marching Cubes", None))
+        self.rendererSelect.setItemText(1, QCoreApplication.translate("MainWindow", u"Flying Edges", None))
+        self.rendererSelect.setItemText(2, QCoreApplication.translate("MainWindow", u"CPU volume raycasting", None))
+        self.rendererSelect.setItemText(3, QCoreApplication.translate("MainWindow", u"GPU volume raycasting", None))
+
         self.renderBtn.setText(QCoreApplication.translate("MainWindow", u"Render", None))
         self.loadBtn.setText(QCoreApplication.translate("MainWindow", u"Load", None))
         self.resetBtn.setText(QCoreApplication.translate("MainWindow", u"Reset", None))
+        self.saveObjBtn.setText(QCoreApplication.translate("MainWindow", u"Save", None))
     # retranslateUi
 

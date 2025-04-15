@@ -53,6 +53,24 @@ class Renderer(QWidget):
         self.renderer.ResetCamera()
         self.vtkWindow.Render()
 
+    def writeObj(self, filepath):
+        if(self.actors==[]):
+            return
+        appedMapper = vtk.vtkAppendPolyData()
+
+        for actor in self.actors:
+
+            mapper = actor.GetMapper()
+            appedMapper.AddInputData(mapper.GetInput())
+
+        appedMapper.Update()
+
+        writer = vtk.vtkOBJWriter()
+        writer.SetFileName(filepath)
+        writer.SetInputConnection(appedMapper.GetOutputPort())
+        print("model written")
+        writer.Write()
+
     def reset(self):
         for actor in self.actors:
             self.renderer.RemoveActor(actor)

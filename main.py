@@ -1,9 +1,11 @@
+from ntpath import getatime
 import sys
+import time
 from types import DynamicClassAttribute
-from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PySide6.QtWidgets import QFileDialog
 from PySide6 import QtCore
-from vtk import vtkActor, vtkColorTransferFunction, vtkCubeSource, vtkFlyingEdges3D, vtkGPUVolumeRayCastMapper, vtkImageFlip, vtkImageGaussianSmooth, vtkImageMedian3D, vtkImageSobel3D, vtkOutputWindow, vtkPiecewiseFunction, vtkPolyDataMapper, vtkVolume, vtkVolumeProperty
+from vtk import vtkActor, vtkColorTransferFunction, vtkCubeSource, vtkFixedPointVolumeRayCastMapper, vtkFlyingEdges3D, vtkGPUVolumeRayCastMapper, vtkImageFlip, vtkImageGaussianSmooth, vtkImageMedian3D, vtkImageSobel3D, vtkMarchingCubes, vtkOutputWindow, vtkPiecewiseFunction, vtkPolyDataMapper, vtkVolume, vtkVolumeProperty
 from app import LumenMainWindow
 from app.widgets import Renderer
 from app.widgets.DicomViewer import DicomViewer
@@ -33,7 +35,9 @@ class MainWindow(QMainWindow):
 
 
         self.ui.loadBtn.clicked.connect(lambda: self.load(0))
-        self.ui.renderBtn.clicked.connect(lambda: self.renderBtn(1))
+        self.ui.renderBtn.clicked.connect(lambda: self.renderBtn(self.ui.rendererSelect.currentIndex()))
+        self.ui.resetBtn.clicked.connect(self.resetBtn)
+        self.ui.saveObjBtn.clicked.connect(self.saveBtn)
 
     def closeEvent(self, event) -> None:
         self.view.cleanup()
@@ -42,25 +46,49 @@ class MainWindow(QMainWindow):
 
     @QtCore.Slot()
     def load(self, n):
-        dir = QFileDialog.getExistingDirectory(None, "Select Dicom Folder")
 
+        dir = QFileDialog.getExistingDirectory(None, "Load Dicom Imagej")
         if(dir and n==0):
-
             self.loader.load_imge(dir)
             self.filter = DymanicPipeline.DymanicPipeline(self.loader.get_output_port())
 
 
             self.view.updateSource(self.filter.get_ouput_port())
     @QtCore.Slot()
-
+    def resetBtn(self):
+        self.renderer.reset()
+        self.ui.saveObjBtn.setEnabled(True)
+    @QtCore.Slot()
     def renderBtn(self,n:int):
-        if(n==0):
-            self.renderSurface()
-        else:
-            self.renderVolume()
-    def renderVolume(self):
+        # 0-> Marching cubes
+        # 1 -> flying edges
+        # 2 CPU volume ray cast
+        #  3 GPU volume raycast
+        if(n==0 or n==1):
+            self.renderSurface(n)
+        elif(n==2 or n==3):
+            self.renderVolume(n)
+    @QtCore.Slot()
+    def saveBtn(self):
+        path =""
+        path = QFileDialog.getExistingDirectory(None,"Save Model")
+        if not path:
+            return
+
+        modelName = "model"+str(time.time())+".obj"
+
+        filename = QtCore.QDir(path).filePath(modelName)
+
+        self.renderer.writeObj(filename)
+
+        QMessageBox.information(self,"Operation Completed", "Model has been saved!")
+    def renderVolume(self, n:int):
+
+        self.ui.saveObjBtn.setDisabled(True)
         
-        mapper = vtkGPUVolumeRayCastMapper()
+        mapper = vtkFixedPointVolumeRayCastMapper()
+        if(n==3):
+            mapper = vtkGPUVolumeRayCastMapper()
         if(self.filter):
             mapper.SetInputConnection(self.filter.get_ouput_port())
 
@@ -102,8 +130,10 @@ class MainWindow(QMainWindow):
     
 
 
-    def renderSurface(self):
-        mcube = vtkFlyingEdges3D()
+    def renderSurface(self, n:int):
+        mcube = vtkMarchingCubes()
+        if(n==1):
+            mcube = vtkFlyingEdges3D()
         if(self.filter):
             mcube.SetInputConnection(self.filter.get_ouput_port())
             mcube.SetValue(0,128)

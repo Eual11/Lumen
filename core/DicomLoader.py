@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import List, Tuple
 from vtk import vtkDICOMImageReader
 
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QMessageBox
@@ -37,6 +37,10 @@ class DicomLoader:
         if(self.reader):
             return self.reader.GetDataExtent()[-1]
         return 0
+    def get_medical_property(self)->List[str]:
+        if(self.reader):
+            return [str(self.reader.GetPatientName())] 
+        return []
 
     def get_output_port(self):
         return self.ouput_port

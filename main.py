@@ -5,7 +5,7 @@ from types import DynamicClassAttribute
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PySide6.QtWidgets import QFileDialog
 from PySide6 import QtCore
-from vtk import vtkActor, vtkColorTransferFunction, vtkCubeSource, vtkFixedPointVolumeRayCastMapper, vtkFlyingEdges3D, vtkGPUVolumeRayCastMapper, vtkImageFlip, vtkImageGaussianSmooth, vtkImageMedian3D, vtkImageSobel3D, vtkMarchingCubes, vtkOutputWindow, vtkPiecewiseFunction, vtkPolyDataMapper, vtkVolume, vtkVolumeProperty
+from vtk import vtkActor, vtkColorTransferFunction, vtkCubeSource, vtkFixedPointVolumeRayCastMapper, vtkFlyingEdges3D, vtkGPUVolumeRayCastMapper, vtkImageFlip, vtkImageGaussianSmooth, vtkImageMedian3D, vtkImageSobel3D, vtkImageThreshold, vtkMarchingCubes, vtkOutputWindow, vtkPiecewiseFunction, vtkPolyDataMapper, vtkVolume, vtkVolumeProperty
 from app import LumenMainWindow
 from app.widgets import Renderer
 from app.widgets.DicomViewer import DicomViewer
@@ -31,7 +31,6 @@ class MainWindow(QMainWindow):
         self.ui.vtkContainer.addWidget(self.renderer)
 
 
-        #NOTE: testing buttons and loading
 
 
         self.ui.loadBtn.clicked.connect(lambda: self.load(0))
@@ -52,8 +51,16 @@ class MainWindow(QMainWindow):
             self.loader.load_imge(dir)
             self.filter = DymanicPipeline.DymanicPipeline(self.loader.get_output_port())
 
+            if(self.ui.enableThr.isChecked()):
+                threshold = vtkImageThreshold()
+                threshold.ThresholdBetween(self.ui.minThresholdSpinbox.value(), self.ui.maxThresholdSpinbox.value())
+                threshold.ReplaceOutOn()
+                threshold.SetOutValue(0)
+                self.filter.add_filter(threshold)
+
 
             self.view.updateSource(self.filter.get_ouput_port())
+            self.view.setPatientDat(self.loader.get_medical_property())
     @QtCore.Slot()
     def resetBtn(self):
         self.renderer.reset()
@@ -99,7 +106,7 @@ class MainWindow(QMainWindow):
         opacity_transfer_function.AddPoint(-1000, 0.0)  # Air/lung = transparent
         opacity_transfer_function.AddPoint(-300,  0.1)  # Fat = transparent
         opacity_transfer_function.AddPoint(-100,  0.2) # Slight fat/muscle transition
-        opacity_transfer_function.AddPoint(0,     0.1)  # Water
+        opacity_transfer_function.AddPoint(0,     0.0)  # Water
         opacity_transfer_function.AddPoint(150,   0.2)  # Start to fade out bone
         opacity_transfer_function.AddPoint(300,   0.3)  # Bone/contrast = hide
         opacity_transfer_function.AddPoint(1000,   1.0)  # Bone/contrast = hide
@@ -136,8 +143,10 @@ class MainWindow(QMainWindow):
             mcube = vtkFlyingEdges3D()
         if(self.filter):
             mcube.SetInputConnection(self.filter.get_ouput_port())
-            mcube.SetValue(0,128)
-
+            if(self.ui.enableThr.isChecked()):
+                mcube.SetValue(0,(self.ui.minThresholdSpinbox.value()+self.ui.maxThresholdSpinbox.value())//2)
+            else:
+                mcube.SetValue(0, 128)
 
         mapper = vtkPolyDataMapper()
         mapper.SetInputConnection(mcube.GetOutputPort())

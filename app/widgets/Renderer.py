@@ -75,6 +75,8 @@ class Renderer(QWidget):
             self.renderer.RemoveActor(actor)
         for volume in self.volumes:
             self.renderer.RemoveVolume(volume)
+        self.actors.clear()
+        self.volumes.clear()
         self.vtkWindow.Render()
 
 

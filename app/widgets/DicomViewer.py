@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QMessageBox
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import vtk
@@ -32,6 +32,8 @@ class DicomViewer(QWidget):
         self.viewer.SetRenderWindow(self.vtkInteractor.GetRenderWindow())
 
         self.updateSource(source)
+    def setPatientDat(self, arr:List[str]):
+        self.ui.imageInfo.setText(" ".join(arr))
     
     def renderImage(self):
         if(self.viewer):
@@ -39,6 +41,7 @@ class DicomViewer(QWidget):
     def setSliceIdx(self,idx:int):
         if(self.viewer):
             self.viewer.SetSlice(idx)
+            self.ui.sliceIdxLabel.setText(f"Slice: {idx+1}/{self.ui.sliceSlider.maximum()+1}")
             self.renderImage()
     def cleanup(self):
         if(self.vtkInteractor):
@@ -47,9 +50,10 @@ class DicomViewer(QWidget):
     def updateSource(self, source:Optional[vtk.vtkAlgorithmOutput]):
         self.source = source
         if(source):
-            self.ui.sliceSlider.setValue(0)
             self.viewer.SetInputConnection(source)
+            self.ui.sliceSlider.setValue(0)
             self.ui.sliceSlider.setMaximum(self.viewer.GetSliceMax())
+            self.ui.sliceIdxLabel.setText(f"Slice: 1/{self.ui.sliceSlider.maximum()+1}")
             self.viewer.GetRenderer().ResetCamera()
             self.viewer.Render()
         else:

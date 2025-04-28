@@ -26,7 +26,7 @@ class Segement:
         elif op == "replace":
             # replace mask with new mask
             # mask = new_mask
-            self.mask = new_mask
+            self.mask[:] = new_mask
         else:
             raise ValueError("Invalid mode: only add, subtract, replace are supported")
 

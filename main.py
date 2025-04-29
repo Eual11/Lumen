@@ -13,6 +13,7 @@ from app.widgets.DicomViewer import DicomViewer
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 from core import DicomLoader, DymanicPipeline
+from core.Filters import  MedianFilter
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
@@ -50,6 +51,8 @@ class MainWindow(QMainWindow):
         if(dir and n==0):
             self.loader.load_imge(dir)
             self.filter = DymanicPipeline.DymanicPipeline(self.loader.get_output_port())
+            median = MedianFilter()
+            self.filter.add_filter(median)
 
             if(self.ui.enableThr.isChecked()):
                 threshold = vtkImageThreshold()
@@ -60,6 +63,7 @@ class MainWindow(QMainWindow):
 
 
             self.view.updateSource(self.filter.get_ouput_port())
+            print("here")
             self.view.setPatientDat(self.loader.get_medical_property())
     @QtCore.Slot()
     def resetBtn(self):
@@ -165,7 +169,7 @@ class MainWindow(QMainWindow):
 def main():
     app = QApplication(sys.argv)
 
-    vtkOutputWindow.SetGlobalWarningDisplay(0)
+    # vtkOutputWindow.SetGlobalWarningDisplay(0)
 
     ui = MainWindow()
     ui.show()

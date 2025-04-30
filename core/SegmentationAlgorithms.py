@@ -1,13 +1,11 @@
-from Segment import Segement
 import SimpleITK as sitk
-
 from utils.utils import vtkImageToSITKImage
-
 from vtk import vtkImageData
+import Segment
 
 """Abstractions for SITK Segementation Algorithms to work on Segements """
 
-class ThresholdFilter:
+class BinaryThresholdFilter:
     lower_threshold:int
     upper_threshold:int
     inside_value:int
@@ -23,7 +21,7 @@ class ThresholdFilter:
        self._filter = sitk.BinaryThresholdImageFilter()
 
        
-    def Execute(self, image:vtkImageData,segement:Segement, op:str ="add"):
+    def Execute(self, image:vtkImageData,segement:Segment.Segment, op:str ="add"):
 
        self._filter.SetLowerThreshold(self.lower_threshold) 
        self._filter.SetUpperThreshold(self.upper_threshold) 
@@ -34,6 +32,4 @@ class ThresholdFilter:
        sitk_img = self._filter.Execute(sitk_img) 
 
        segement.apply_mask_update(sitk.GetArrayViewFromImage(sitk_img), op) 
-       
 
- 

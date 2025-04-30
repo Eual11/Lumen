@@ -52,6 +52,10 @@ class Renderer(QWidget):
         self.volumes.append(volume)
         self.renderer.ResetCamera()
         self.vtkWindow.Render()
+    def hasActors(self)->bool:
+        return len(self.actors)!=0
+    def hasVolume(self)->bool:
+        return len(self.actors)!=0
 
     def writeObj(self, filepath):
         if(self.actors==[]):

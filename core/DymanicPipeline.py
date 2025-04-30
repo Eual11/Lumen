@@ -3,7 +3,7 @@ from vtk import vtkAlgorithmOutput, vtkCubeSource
 from vtk import vtkAlgorithm
 
 
-class DymanicPipeline:
+class DynamicPipeline :
     def __init__(self, source:Optional[vtkAlgorithmOutput]=None) -> None:
         # input and output of pipelin
         self.source = source
@@ -36,8 +36,16 @@ class DymanicPipeline:
         if(0<=index <len(self.filters)):
             del self.filters[index]
         self._rebuild_pipeline()
+    
 
     def get_ouput_port(self):
         return self.ouputport
+    def get_output_data(self):
+        if(self.ouputport):
+            port = self.ouputport
+            port.GetProducer().Update()
+            return vtkAlgorithm.GetOutputDataObject(port.GetProducer(), port.GetIndex())
+        else:
+            raise ValueError("No producer ")
 
 

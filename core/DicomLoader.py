@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from vtk import vtkDICOMImageReader
+from vtk import vtkDICOMImageReader, vtkImageShiftScale
 
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QMessageBox
 import os

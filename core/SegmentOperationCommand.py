@@ -43,5 +43,9 @@ class ThresholdCommand(SegmentOperationCommand):
        sitk_img:sitk.Image   =  vtkImageToSITKImage(self._image)
        sitk_img = self._filter.Execute(sitk_img) 
 
-       self.segment.apply_mask_update(sitk.GetArrayViewFromImage(sitk_img), self.operation) 
+       sitk_arr =  sitk.GetArrayViewFromImage(sitk_img)
+       sitk_arr = sitk_arr.reshape(sitk_img.GetSize())
+
+
+       self.segment.apply_mask_update(sitk_arr, self.operation) 
 

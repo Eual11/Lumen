@@ -1,9 +1,9 @@
 from vtk import vtkDataArray, vtkImageData, vtkVersion, VTK_INT
 from vtkmodules.util import numpy_support
-from SimpleITK import Image, GetArrayFromImage, GetImageFromArray
+from SimpleITK import Image, GetArrayFromImage, GetImageFromArray,RescaleIntensity,Cast,sitkUInt16, WriteImage
 
 # TODO: support for image type casting
-def vtkImageToSITKImage(vtk_img: vtkImageData)->Image:
+def vtkImageToSITKImage(vtk_img: vtkImageData,)->Image:
 
     """Convert a VTK image to a  SimpleITK image, via VTK numpy_support."""
     vtk_array = vtk_img.GetPointData().GetScalars()
@@ -62,9 +62,24 @@ def SITKImageTOVtkImageData(sitk_img: Image)->vtkImageData:
     return vtkarrayToVtkImageData(vtk_arr, numpy_shape[::-1], sitk_img.GetSpacing())
 
 
+# save a sitk_img to png, this only support 2D images and 3D image with only a depth of 1
+
+
+def save_sitk_image(sitk_img:Image):
+
+
+# Rescale intensities to [0, 255]
+    rescaled =RescaleIntensity(sitk_img, outputMinimum=0, outputMaximum=255)
+
+# Cast to unsigned 8-bit
+    rescaled_uint8 = Cast(rescaled, sitkUInt16)
+
+# Save as PNG
+    WriteImage(rescaled_uint8, "output_image.png")
 
 
 
-    
+
+        
 
 

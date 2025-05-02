@@ -1,14 +1,17 @@
 from enum import Enum
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
+from SimpleITK import GetImageFromArray
 from SimpleITK.SimpleITK import Exp
+from vtkmodules.util import numpy_support
 from app.widgets.DicomViewer import DicomViewer
 from app.widgets.Renderer import Renderer
 from core import DicomLoader, DymanicPipeline
 
-from vtk import vtkActor, vtkAlgorithm, vtkColorTransferFunction, vtkCubeSource, vtkFixedPointVolumeRayCastMapper, vtkFlyingEdges3D, vtkGPUVolumeRayCastMapper, vtkImageFlip, vtkImageGaussianSmooth, vtkImageMedian3D, vtkImageSobel3D, vtkImageThreshold, vtkMarchingCubes, vtkOutputWindow, vtkPiecewiseFunction, vtkPolyDataMapper, vtkVolume, vtkVolumeProperty
+from vtk import vtkActor, vtkAlgorithm, vtkColorTransferFunction, vtkCubeSource, vtkFixedPointVolumeRayCastMapper, vtkFlyingEdges3D, vtkGPUVolumeRayCastMapper, vtkImageData, vtkImageFlip, vtkImageGaussianSmooth, vtkImageMedian3D, vtkImageSobel3D, vtkImageThreshold, vtkMarchingCubes, vtkOutputWindow, vtkPiecewiseFunction, vtkPolyDataMapper, vtkVolume, vtkVolumeProperty,VTK_INT
 
 from core.Segment import Segment
+from utils.utils import save_sitk_image, vtkarrayToVtkImageData
 
 
 class RenderMethods(Enum):
@@ -62,6 +65,32 @@ class Lumen:
             return self.segments[idx]
         else:
             raise IndexError("Segment Index out of bounds")
+    def render_segment(self,idx:int, method:RenderMethods):
+        if 0 <= idx < len(self.segments):
+            segment = self.segments[idx]
+
+            mask = segment.mask
+
+            img:vtkImageData = self.get_pipeline_output_data()
+            img_arr = numpy_support.vtk_to_numpy(img.GetPointData().GetScalars())
+            img_arr = img_arr.reshape(img.GetDimensions())
+
+            final_img = mask*img_arr
+            shape = final_img.shape
+
+            save_sitk_image(GetImageFromArray(final_img))
+
+            final_img_vtk_array =  numpy_support.numpy_to_vtk(final_img.ravel(), deep=False, array_type=VTK_INT)
+
+            if method == RenderMethods.MARCHING_CUBES or method == RenderMethods.FLYING_EDGES:
+                # self.renderSurface(method,vtkarrayToVtkImageData(final_img_vtk_array, shape[::-1],img.GetSpacing()))
+                pass
+            else:
+                raise NotImplemented
+
+
+        else:
+            raise IndexError
 
     def load_image(self, path):
 
@@ -84,12 +113,15 @@ class Lumen:
             raise ValueError("No Image pipeline setup")
 
         self.viewer.setPatientDat(self.loader.get_medical_property())
-    def renderSurface(self, method:RenderMethods):
+    def renderSurface(self, method:RenderMethods,imgData:Optional[vtkImageData]=None):
         mcube = vtkMarchingCubes()
         if(method == RenderMethods.FLYING_EDGES):
             mcube = vtkFlyingEdges3D()
         if(self.image_pipeline):
-            mcube.SetInputConnection(self.image_pipeline.get_ouput_port())
+            if(imgData):
+                mcube.SetInputData(imgData)
+            else:
+                mcube.SetInputConnection(self.image_pipeline.get_ouput_port())
             mcube.SetValue(0, 128)
 
         mapper = vtkPolyDataMapper()

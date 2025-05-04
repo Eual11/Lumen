@@ -79,7 +79,7 @@ class Lumen:
             final_img_vtk_array =  numpy_support.numpy_to_vtk(final_img.ravel(), deep=False, array_type=VTK_INT)
             if method == RenderMethods.MARCHING_CUBES or method == RenderMethods.FLYING_EDGES:
                 final_vtk_img = vtkarrayToVtkImageData(final_img_vtk_array, shape,img.GetSpacing())
-                self.renderSurface(method, final_vtk_img)
+                self.renderSurface(method, final_vtk_img, isoValue=segment.meta_data["lower_threshold"])
             else:
                 raise NotImplemented
 
@@ -93,6 +93,10 @@ class Lumen:
 
         # create image processing pipeline
         self.image_pipeline = DymanicPipeline.DynamicPipeline(self.loader.get_output_port())
+
+        #clearing pre-existing segments
+        
+        self.segments.clear()
 
 
         self.viewer.updateSource(self.image_pipeline.get_ouput_port())
@@ -108,7 +112,7 @@ class Lumen:
             raise ValueError("No Image pipeline setup")
 
         self.viewer.setPatientDat(self.loader.get_medical_property())
-    def renderSurface(self, method:RenderMethods,imgData:Optional[vtkImageData]=None):
+    def renderSurface(self, method:RenderMethods,imgData:Optional[vtkImageData]=None, isoValue = 128):
         mcube = vtkMarchingCubes()
         if(method == RenderMethods.FLYING_EDGES):
             mcube = vtkFlyingEdges3D()
@@ -117,7 +121,8 @@ class Lumen:
                 mcube.SetInputData(imgData)
             else:
                 mcube.SetInputConnection(self.image_pipeline.get_ouput_port())
-            mcube.SetValue(0, 128)
+            print(isoValue)
+            mcube.SetValue(0, isoValue)
 
         mapper = vtkPolyDataMapper()
         mapper.SetInputConnection(mcube.GetOutputPort())

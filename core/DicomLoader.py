@@ -15,6 +15,7 @@ class DicomLoader:
     def load_imge(self, path):
         self._cleanup()
         self.reader = vtkDICOMImageReader()
+        self.reader.Modified()
 
         if(not os.path.exists(path)):
             return

@@ -9,10 +9,16 @@ class Segment:
     def __init__(self, name:str, volume_size: Tuple[int,int, int], color: Tuple[int, int, int]) -> None:
 
         self.name = name;
+        #Note: Masks only hold binary data so it can be stored even more efficently
+        #TODO: Figure that out :")
         self.mask = np.zeros(volume_size, dtype=np.int8)
 
         self.color = color
         self.volume_size = volume_size
+
+        #Stores additional information
+
+        self.meta_data = {}
 
     def __str__(self) -> str:
         return f"Segement: {self.name}\n Size: {self.volume_size}\n Color: {self.color}\n Mask:{self.mask}"

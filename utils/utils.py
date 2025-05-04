@@ -1,6 +1,7 @@
 from vtk import vtkDataArray, vtkImageData, vtkVersion, VTK_INT
+from numpy import ndarray
 from vtkmodules.util import numpy_support
-from SimpleITK import Image, GetArrayFromImage, GetImageFromArray,RescaleIntensity,Cast,sitkUInt16, WriteImage
+from SimpleITK import Image, GetArrayFromImage, GetImageFromArray,RescaleIntensity,Cast,sitkUInt16, WriteImage, sitkUInt8
 
 # TODO: support for image type casting
 def vtkImageToSITKImage(vtk_img: vtkImageData,)->Image:
@@ -65,19 +66,26 @@ def SITKImageTOVtkImageData(sitk_img: Image)->vtkImageData:
 # save a sitk_img to png, this only support 2D images and 3D image with only a depth of 1
 
 
-def save_sitk_image(sitk_img:Image):
+def save_sitk_image(sitk_img:Image, filename):
 
 
 # Rescale intensities to [0, 255]
-    rescaled =RescaleIntensity(sitk_img, outputMinimum=0, outputMaximum=255)
 
+    sitk_img = RescaleIntensity(sitk_img)
 # Cast to unsigned 8-bit
-    rescaled_uint8 = Cast(rescaled, sitkUInt16)
+    rescaled_uint8 = Cast(sitk_img, sitkUInt8)
 
 # Save as PNG
-    WriteImage(rescaled_uint8, "output_image.png")
+    WriteImage(rescaled_uint8, filename)
 
+    print("saved")
 
+# debug function to save a 2D or 3D with depth of 1 image as a png
+
+def save_numpy_arr_as_png(arr:ndarray, filename="output_image.png"):
+    img = GetImageFromArray(arr.reshape(arr.shape[::-1]))
+
+    save_sitk_image(img,filename)
 
 
         

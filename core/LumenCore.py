@@ -1,8 +1,9 @@
 from enum import Enum
 from typing import List, Optional, Tuple
-
+import time
 from SimpleITK import GetImageFromArray
 from SimpleITK.SimpleITK import Exp
+import numpy
 from vtkmodules.util import numpy_support
 from app.widgets.DicomViewer import DicomViewer
 from app.widgets.Renderer import Renderer
@@ -11,7 +12,7 @@ from core import DicomLoader, DymanicPipeline
 from vtk import vtkActor, vtkAlgorithm, vtkColorTransferFunction, vtkCubeSource, vtkFixedPointVolumeRayCastMapper, vtkFlyingEdges3D, vtkGPUVolumeRayCastMapper, vtkImageData, vtkImageFlip, vtkImageGaussianSmooth, vtkImageMedian3D, vtkImageSobel3D, vtkImageThreshold, vtkMarchingCubes, vtkOutputWindow, vtkPiecewiseFunction, vtkPolyDataMapper, vtkVolume, vtkVolumeProperty,VTK_INT
 
 from core.Segment import Segment
-from utils.utils import save_sitk_image, vtkarrayToVtkImageData
+from utils.utils import save_numpy_arr_as_png, save_sitk_image, vtkarrayToVtkImageData
 
 
 class RenderMethods(Enum):
@@ -68,23 +69,17 @@ class Lumen:
     def render_segment(self,idx:int, method:RenderMethods):
         if 0 <= idx < len(self.segments):
             segment = self.segments[idx]
-
             mask = segment.mask
-
             img:vtkImageData = self.get_pipeline_output_data()
+            shape = img.GetDimensions()
             img_arr = numpy_support.vtk_to_numpy(img.GetPointData().GetScalars())
-            img_arr = img_arr.reshape(img.GetDimensions())
-
+            dims = img.GetDimensions()
+            img_arr = img_arr.reshape(dims[0], dims[1], dims[2])
             final_img = mask*img_arr
-            shape = final_img.shape
-
-            save_sitk_image(GetImageFromArray(final_img))
-
             final_img_vtk_array =  numpy_support.numpy_to_vtk(final_img.ravel(), deep=False, array_type=VTK_INT)
-
             if method == RenderMethods.MARCHING_CUBES or method == RenderMethods.FLYING_EDGES:
-                # self.renderSurface(method,vtkarrayToVtkImageData(final_img_vtk_array, shape[::-1],img.GetSpacing()))
-                pass
+                final_vtk_img = vtkarrayToVtkImageData(final_img_vtk_array, shape,img.GetSpacing())
+                self.renderSurface(method, final_vtk_img)
             else:
                 raise NotImplemented
 

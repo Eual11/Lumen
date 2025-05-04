@@ -48,4 +48,14 @@ class ThresholdCommand(SegmentOperationCommand):
 
 
        self.segment.apply_mask_update(sitk_arr, self.operation) 
+       segment_meta_data = self.segment.meta_data 
+
+       lower = segment_meta_data.get("lower_threshold", float('inf')) 
+       upper = segment_meta_data.get("upper_threshold", float('-inf')) 
+
+       segment_meta_data["lower_threshold"] =min(self.lower_threshold, lower) 
+       segment_meta_data["upper_threshold"] = max(self.upper_threshold, upper) 
+       
+
+
 

@@ -44,20 +44,22 @@ class MainWindow(QMainWindow):
         dir = QFileDialog.getExistingDirectory(None, "Load Dicom Imagej")
         if(dir and n==0):
             self.lumen_core.load_image(dir)
-            self.lumen_core.create_segement("segement 1", color=(144,0,44))
 
-            self.lumen_core.create_segement("test", (0,0,0))
+            self.lumen_core.create_segement("test", (255,255,255))
 
             seg = self.lumen_core.get_segment(0)
             data = self.lumen_core.get_pipeline_output_data()
 
-            cmd = ThresholdCommand(data, seg,op="subtract")
+            cmd = ThresholdCommand(data, seg,op="add")
+
+            cmd.lower_threshold = 400
+            cmd.upper_threshold = 3000
 
             cmd.execute()
 
+            self.lumen_core.render_segment(0, RenderMethods.MARCHING_CUBES)
 
 
-            print(seg)
 
             
     @QtCore.Slot()

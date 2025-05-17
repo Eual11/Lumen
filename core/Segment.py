@@ -5,6 +5,7 @@ class Segment:
     mask: np.ndarray
     color: Tuple[int, int, int]
     volume_size:Tuple[int,int,int]
+    visibility: bool
 
     def __init__(self, name:str, volume_size: Tuple[int,int, int], color: Tuple[int, int, int]) -> None:
 
@@ -15,13 +16,14 @@ class Segment:
 
         self.color = color
         self.volume_size = volume_size
+        self.visibility = True
 
         #Stores additional information
 
         self.meta_data = {}
 
     def __str__(self) -> str:
-        return f"Segement: {self.name}\n Size: {self.volume_size}\n Color: {self.color}\n Mask:{self.mask}"
+        return f"Segement: {self.name}\n Size: {self.volume_size}\n Color: {self.color}\n Mask:{self.mask}\n Visibility: {self.visibility}"
 
     def apply_mask_update(self, new_mask:np.ndarray, op:str = "add"):
         """Apply a mask operation

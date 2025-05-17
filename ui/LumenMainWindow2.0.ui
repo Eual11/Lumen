@@ -173,7 +173,7 @@
          <widget class="QScrollArea" name="scrollArea">
           <property name="minimumSize">
            <size>
-            <width>320</width>
+            <width>360</width>
             <height>480</height>
            </size>
           </property>
@@ -190,8 +190,8 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-165</y>
-             <width>306</width>
+             <y>0</y>
+             <width>346</width>
              <height>672</height>
             </rect>
            </property>

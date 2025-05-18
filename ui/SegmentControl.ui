@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>segmentControl</class>
+ <widget class="QWidget" name="segmentControl">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>40</y>
+     <width>325</width>
+     <height>34</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QPushButton" name="addSegmentBtn">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>64</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Add</string>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normaloff>../plus.png</normaloff>../plus.png</iconset>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="removeSegmentBtn">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>64</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Remove</string>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normaloff>../minus-button.png</normaloff>../minus-button.png</iconset>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="renderBtn">
+      <property name="minimumSize">
+       <size>
+        <width>64</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Render</string>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normaloff>../3d.png</normaloff>../3d.png</iconset>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QComboBox" name="reconMethod">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>64</width>
+        <height>32</height>
+       </size>
+      </property>
+      <item>
+       <property name="text">
+        <string>Marching Cubes</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Flying Edges</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>New Item</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>CPU Volume RayCasting</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>GPU Volume RayCasting</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

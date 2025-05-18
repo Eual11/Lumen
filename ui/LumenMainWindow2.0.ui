@@ -28,9 +28,9 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_10">
+     <layout class="QHBoxLayout" name="toolbarHeader">
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="btnLoad">
         <property name="minimumSize">
          <size>
           <width>42</width>
@@ -47,8 +47,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../RCS.qrc">
-          <normaloff>:/saveIcon/icons8-image-96.png</normaloff>:/saveIcon/icons8-image-96.png</iconset>
+         <iconset>
+          <normaloff>../../../../../.designer/icons8-image-96.png</normaloff>../../../../../.designer/icons8-image-96.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -59,7 +59,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_2">
+       <widget class="QPushButton" name="btnSaveRender">
         <property name="minimumSize">
          <size>
           <width>42</width>
@@ -76,8 +76,37 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../RCS.qrc">
-          <normaloff>:/newPrefix/icons8-save-100.png</normaloff>:/newPrefix/icons8-save-100.png</iconset>
+         <iconset>
+          <normaloff>../../../../../.designer/icons8-save-100.png</normaloff>../../../../../.designer/icons8-save-100.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnResetRenderer">
+        <property name="minimumSize">
+         <size>
+          <width>42</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>42</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>../icons8-reset-50.png</normaloff>../icons8-reset-50.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -104,7 +133,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="comboBox">
+       <widget class="QComboBox" name="comboModules">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -182,7 +211,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QScrollArea" name="scrollArea">
+       <widget class="QScrollArea" name="panelControls">
         <property name="minimumSize">
          <size>
           <width>360</width>
@@ -198,7 +227,7 @@
         <property name="widgetResizable">
          <bool>true</bool>
         </property>
-        <widget class="QWidget" name="scrollAreaWidgetContents">
+        <widget class="QWidget" name="content">
          <property name="geometry">
           <rect>
            <x>0</x>
@@ -212,9 +241,9 @@
        </widget>
       </item>
       <item>
-       <layout class="QGridLayout" name="gridLayout">
+       <layout class="QGridLayout" name="content_2">
         <item row="1" column="0">
-         <widget class="QFrame" name="frame_3">
+         <widget class="QFrame" name="viewSecondary2">
           <property name="frameShape">
            <enum>QFrame::Shape::StyledPanel</enum>
           </property>
@@ -224,7 +253,7 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QFrame" name="frame_4">
+         <widget class="QFrame" name="viewRender3D">
           <property name="frameShape">
            <enum>QFrame::Shape::StyledPanel</enum>
           </property>
@@ -234,7 +263,7 @@
          </widget>
         </item>
         <item row="0" column="0">
-         <widget class="QFrame" name="frame">
+         <widget class="QFrame" name="viewPrimary">
           <property name="frameShape">
            <enum>QFrame::Shape::StyledPanel</enum>
           </property>
@@ -244,7 +273,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QFrame" name="frame_2">
+         <widget class="QFrame" name="viewSecondary1">
           <property name="frameShape">
            <enum>QFrame::Shape::StyledPanel</enum>
           </property>

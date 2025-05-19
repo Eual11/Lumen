@@ -39,7 +39,7 @@ class Ui_MainWindow(object):
         self.btnLoad.setMinimumSize(QSize(42, 32))
         self.btnLoad.setMaximumSize(QSize(42, 32))
         icon = QIcon()
-        icon.addFile(u"../../../../../.designer/icons8-image-96.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon.addFile(u":/saveIcon/icons8-image-96.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.btnLoad.setIcon(icon)
         self.btnLoad.setIconSize(QSize(32, 32))
 
@@ -50,7 +50,7 @@ class Ui_MainWindow(object):
         self.btnSaveRender.setMinimumSize(QSize(42, 32))
         self.btnSaveRender.setMaximumSize(QSize(42, 32))
         icon1 = QIcon()
-        icon1.addFile(u"../../../../../.designer/icons8-save-100.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon1.addFile(u":/newPrefix/icons8-save-100.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.btnSaveRender.setIcon(icon1)
         self.btnSaveRender.setIconSize(QSize(32, 32))
 
@@ -61,7 +61,7 @@ class Ui_MainWindow(object):
         self.btnResetRenderer.setMinimumSize(QSize(42, 32))
         self.btnResetRenderer.setMaximumSize(QSize(42, 32))
         icon2 = QIcon()
-        icon2.addFile(u"../icons8-reset-50.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon2.addFile(u":/saveIcon/icons8-reset-50.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.btnResetRenderer.setIcon(icon2)
         self.btnResetRenderer.setIconSize(QSize(32, 32))
 

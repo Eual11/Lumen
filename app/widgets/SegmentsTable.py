@@ -16,8 +16,8 @@ class SegementTableModel(QAbstractTableModel):
 
         self.headers = ["Name", "Color", "Visibility"]
 
-        self.segment_color_icon = QIcon("../../color-wheel.png")
-        self.segment_visibility_icon = QIcon("../../eye.png")
+        self.segment_color_icon = QIcon(u":/segment_table/color-wheel.png")
+        self.segment_visibility_icon = QIcon(":/segment_table/eye.png")
 
 
 
@@ -125,8 +125,8 @@ class VisibilityDelegate(QStyledItemDelegate):
         super().__init__()
 
         # Loading display icons
-        self.open_eye = QIcon("../../eye.png")
-        self.close_eye = QIcon("../../hidden.png")
+        self.open_eye = QIcon(":/segment_table/eye.png")
+        self.close_eye = QIcon(":/segment_table/hidden.png")
 
     def paint(self, painter:QPainter, option, index):
 

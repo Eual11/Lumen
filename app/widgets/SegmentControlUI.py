@@ -36,7 +36,7 @@ class Ui_segmentControl(object):
         self.addSegmentBtn.setSizePolicy(sizePolicy)
         self.addSegmentBtn.setMinimumSize(QSize(64, 32))
         icon = QIcon()
-        icon.addFile(u"../plus.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon.addFile(u":/segment-control/plus.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.addSegmentBtn.setIcon(icon)
 
         self.content.addWidget(self.addSegmentBtn)
@@ -45,9 +45,9 @@ class Ui_segmentControl(object):
         self.removeSegmentBtn.setObjectName(u"removeSegmentBtn")
         sizePolicy.setHeightForWidth(self.removeSegmentBtn.sizePolicy().hasHeightForWidth())
         self.removeSegmentBtn.setSizePolicy(sizePolicy)
-        self.removeSegmentBtn.setMinimumSize(QSize(64, 32))
+        self.removeSegmentBtn.setMinimumSize(QSize(72, 32))
         icon1 = QIcon()
-        icon1.addFile(u"../minus-button.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon1.addFile(u":/segment-control/minus-button.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.removeSegmentBtn.setIcon(icon1)
 
         self.content.addWidget(self.removeSegmentBtn)
@@ -56,7 +56,7 @@ class Ui_segmentControl(object):
         self.renderBtn.setObjectName(u"renderBtn")
         self.renderBtn.setMinimumSize(QSize(64, 32))
         icon2 = QIcon()
-        icon2.addFile(u"../3d.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon2.addFile(u":/segment-control/3d.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.renderBtn.setIcon(icon2)
 
         self.content.addWidget(self.renderBtn)

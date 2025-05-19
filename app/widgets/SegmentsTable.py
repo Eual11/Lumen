@@ -9,8 +9,10 @@ class SegementTableModel(QAbstractTableModel):
         super().__init__()
 
         self._data_ref = data
+        self.ROWS = 0
+        self.COLS =0
 
-        self._data = self.transform_to_internal(data)
+        self.update_internal_data()
 
         self.headers = ["Name", "Color", "Visibility"]
 
@@ -46,11 +48,10 @@ class SegementTableModel(QAbstractTableModel):
             self._data_ref[i].color = row[1]
             self._data_ref[i].name = row[0]
 
-
     def rowCount(self, parent = QModelIndex()):
-        return len(self._data)
+        return self.ROWS
     def columnCount(self, parent = QModelIndex()):
-        return len(self._data[0]) if self._data else 0
+        return self.COLS
 
     def data(self, index, role = Qt.DisplayRole):
         row, col = index.row(), index.column()
@@ -77,8 +78,8 @@ class SegementTableModel(QAbstractTableModel):
 
         if role == Qt.EditRole and col !=1:
             self._data[row][col] = value
-            self.dataChanged.emit(index, index)
             self.apply_changes()
+            self.dataChanged.emit(index, index)
             return True
         return False
 
@@ -94,6 +95,11 @@ class SegementTableModel(QAbstractTableModel):
             elif section ==1:
                 return self.segment_color_icon
         return None
+    def update_internal_data(self):
+        self._data = self.transform_to_internal(self._data_ref)
+        self.ROWS = len(self._data)
+        #Because we have obligatory 3 columns, we set it to 3
+        self.COLS = len(self._data[0]) if self._data else 3
 
 class SegementColorDelegate(QStyledItemDelegate):
 
@@ -172,10 +178,15 @@ class SegementsTableWidget(QWidget):
 
         self.view.SelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         self.view.setStyleSheet("""
-            QTableView::item:selected 
+        QTableView::item:selected 
             {
                 background-color: #095e7d;
-            }
+            } 
+
+        QTableView {
+        border: 2px solid #444;
+            gridline-color: #ccc;
+        }
         """)
 
         self.view.selectionModel().selectionChanged.connect(self.on_selection_changed)
@@ -189,17 +200,17 @@ class SegementsTableWidget(QWidget):
         self.view.setColumnWidth(1,16)
 
         self.view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.view.horizontalHeader().setSectionResizeMode(0,QHeaderView.ResizeMode.Stretch)
 
     def on_selection_changed(self, selected:QItemSelection, deselected:QItemSelection):
         if not self.selection_callback:
             return
-       
-        for index in selected.indexes():
-            row = index.row()
-            model = index.model()
-
-            data = [model.index(row, col).data() for col in range(model.rowCount())]
-            self.selection_callback(data)
-            break
+        self.selection_callback(selected, deselected)
+    def set_selection_change_callback(self,callback):
+        self.selection_callback = callback
+        self.view.selectionModel().selectionChanged.connect(callback)
+    def update_model(self)->None:
+        self.model.update_internal_data()
+        self.model.layoutChanged.emit()
 
           

@@ -37,16 +37,19 @@ class LumenMainWindow(QMainWindow):
 
         # SidePanel UI
 
-
-        self.lumen_core.create_segement("Segment", (1,1,1))
-        self.lumen_core.create_segement("Segment", (1,1,1))
         self.segment_control = SegmentControls.SegmentControls()
+        self.lumen_core.create_segement("Segment 1", (1,1,1))
         self.segments_table = SegmentsTable.SegementsTableWidget(self.lumen_core.segments)
+        self.segments_table.set_selection_change_callback(self.on_segment_table_selection_change)
+
+
+
 
         self.ui.content.layout().addWidget(self.segment_control)
         self.ui.content.layout().addWidget(self.segments_table)
 
-        self.segment_control.add_segment_btn.clicked.connect(lambda: self.lumen_core.create_segement("Segment", (1,1,1)))
+        self.segment_control.add_segment_btn.clicked.connect(self.addSegment)
+        self.segment_control.remove_segment_btn.clicked.connect(self.removeSegment)
 
 
 
@@ -55,12 +58,25 @@ class LumenMainWindow(QMainWindow):
         self.lumen_core.reset_renderer()
     @QtCore.Slot()
     def load(self):
-        dir = QFileDialog.getExistingDirectory(None, "Load Dicom Imagej")
+        dir = QFileDialog.getExistingDirectory(None, "Load Dicom Image")
         self.lumen_core.load_image(dir)
 
     def closeEvent(self, event)->None:
         self.lumen_core.cleanup()
         return super().closeEvent(event)
+    def addSegment(self):
+        self.lumen_core.create_segement("Segment 1", (1,1,1))
+        self.segments_table.update_model()
+    def removeSegment(self):
+       self.lumen_core.delete_selected_segment()
+       self.segments_table.update_model()
+    @QtCore.Slot()
+    def on_segment_table_selection_change(self, selected:QtCore.QItemSelection, deselected:QtCore.QItemSelection):
+        if not len(selected.indexes()):
+            self.lumen_core.selected_segment = -1
+        row = selected.indexes()[0].row()
+        self.lumen_core.selected_segment = row
+        
         
         
 

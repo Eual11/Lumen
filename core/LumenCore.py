@@ -38,6 +38,8 @@ class Lumen:
 
         self.segments: List[Segment] = []
 
+        self.selected_segment =-1
+
     def get_renderer(self):
         return self.renderer
     def get_viewer(self):
@@ -45,6 +47,15 @@ class Lumen:
 
     def reset_renderer(self):
         self.renderer.reset()
+    def delete_selected_segment(self):
+        if self.selected_segment <0 or self.selected_segment >= len(self.segments):
+            return
+        self.segments.pop(self.selected_segment)
+    def render_selected_segment(self):
+        if self.selected_segment <0 or self.selected_segment >= len(self.segments):
+            return
+        #TODO 
+        pass
 
     def cleanup(self):
         self.viewer.cleanup()

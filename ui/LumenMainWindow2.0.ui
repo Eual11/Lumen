@@ -47,8 +47,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset>
-          <normaloff>../../../../../.designer/icons8-image-96.png</normaloff>../../../../../.designer/icons8-image-96.png</iconset>
+         <iconset resource="../RCS.qrc">
+          <normaloff>:/saveIcon/icons8-image-96.png</normaloff>:/saveIcon/icons8-image-96.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -76,8 +76,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset>
-          <normaloff>../../../../../.designer/icons8-save-100.png</normaloff>../../../../../.designer/icons8-save-100.png</iconset>
+         <iconset resource="../RCS.qrc">
+          <normaloff>:/newPrefix/icons8-save-100.png</normaloff>:/newPrefix/icons8-save-100.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -105,8 +105,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset>
-          <normaloff>../icons8-reset-50.png</normaloff>../icons8-reset-50.png</iconset>
+         <iconset resource="../RCS.qrc">
+          <normaloff>:/saveIcon/icons8-reset-50.png</normaloff>:/saveIcon/icons8-reset-50.png</iconset>
         </property>
         <property name="iconSize">
          <size>

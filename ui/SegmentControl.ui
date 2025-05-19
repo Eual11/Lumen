@@ -34,8 +34,8 @@
         <string>Add</string>
        </property>
        <property name="icon">
-        <iconset>
-         <normaloff>../plus.png</normaloff>../plus.png</iconset>
+        <iconset resource="../RCS.qrc">
+         <normaloff>:/segment-control/plus.png</normaloff>:/segment-control/plus.png</iconset>
        </property>
       </widget>
      </item>
@@ -49,7 +49,7 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>64</width>
+         <width>72</width>
          <height>32</height>
         </size>
        </property>
@@ -57,8 +57,8 @@
         <string>Remove</string>
        </property>
        <property name="icon">
-        <iconset>
-         <normaloff>../minus-button.png</normaloff>../minus-button.png</iconset>
+        <iconset resource="../RCS.qrc">
+         <normaloff>:/segment-control/minus-button.png</normaloff>:/segment-control/minus-button.png</iconset>
        </property>
       </widget>
      </item>
@@ -74,8 +74,8 @@
         <string>Render</string>
        </property>
        <property name="icon">
-        <iconset>
-         <normaloff>../3d.png</normaloff>../3d.png</iconset>
+        <iconset resource="../RCS.qrc">
+         <normaloff>:/segment-control/3d.png</normaloff>:/segment-control/3d.png</iconset>
        </property>
       </widget>
      </item>
@@ -137,6 +137,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../RCS.qrc"/>
+ </resources>
  <connections/>
 </ui>

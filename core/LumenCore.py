@@ -39,6 +39,7 @@ class Lumen:
         self.segments: List[Segment] = []
 
         self.selected_segment =-1
+        self.segment_name_idx =1
 
     def get_renderer(self):
         return self.renderer
@@ -60,16 +61,23 @@ class Lumen:
     def cleanup(self):
         self.viewer.cleanup()
         self.renderer.cleanup()
-    def create_segement(self, name:str, color:Tuple[int,int,int], debug=False):
+    def create_segement(self, name:str="Segment", color:Tuple[int,int,int]=(0,0,0), debug=False):
 
         # Segements have the same size as the image currently loaded by the image loader
         extent = self.loader.get_image_dimensions()
+        if( not (extent[1] or extent[3] or extent[5])):
+            return
         size = (extent[1]-extent[0]+1, extent[3]-extent[2]+1, extent[5]-extent[4]+1)
+        if(not (size[0] or size[1] or size[2])):
+            return
+        name_exists = name in [s.name for s in self.segments]
+        if(name_exists):
+            name+=f"{self.segment_name_idx}"
+            self.segment_name_idx+=1
         new_segement = Segment(name, size, color)
 
         if(debug):
             print(new_segement)
-
 
         self.segments.append(new_segement)
     def get_segment(self,idx:int) -> Segment:

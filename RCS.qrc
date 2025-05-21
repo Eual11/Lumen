@@ -1,9 +1,25 @@
 <RCC>
+  <qresource prefix="core">
+    <file>logo.jpg</file>
+  </qresource>
   <qresource prefix="saveIcon">
+    <file>icons8-reset-50.png</file>
     <file>icons8-module-64.png</file>
     <file>icons8-image-96.png</file>
   </qresource>
-  <qresource prefix="newPrefix">
+  <qresource prefix="segment-control">
+    <file>3d.png</file>
+    <file>color-wheel.png</file>
+    <file>hidden.png</file>
+    <file>minus-button.png</file>
+    <file>plus.png</file>
+  </qresource>
+   <qresource prefix="newPrefix">
     <file>icons8-save-100.png</file>
+  </qresource>
+ <qresource prefix="segment_table">
+    <file>color-wheel.png</file>
+    <file>eye.png</file>
+    <file>hidden.png</file>
   </qresource>
 </RCC>

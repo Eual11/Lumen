@@ -1,7 +1,9 @@
 from typing import Optional
 from PySide6 import QtCore
 from PySide6.QtGui import Qt
-from PySide6.QtWidgets import QApplication, QFileDialog, QLabel, QLayout, QMainWindow, QVBoxLayout, QFileDialog, QWidget
+from PySide6.QtCharts import QBarSet, QBarSeries, QChart, QChartView, QValueAxis
+from PySide6.QtWidgets import QApplication, QDoubleSpinBox, QFileDialog, QLabel, QLayout, QMainWindow, QSlider, QVBoxLayout, QFileDialog, QWidget
+from app.HistogramWidget import HistogramWidget
 from app.LumenMainWindow2 import Ui_MainWindow
 from app.WelcomeWidget import WelcomeWidget
 from app.widgets import SegmentControls, SegmentsTable
@@ -110,16 +112,34 @@ class LumenMainWindow(QMainWindow):
         #TODO: clear layout first
         # Segment Editor Layout
         self.clear_layout(self.ui.content.layout())
+        layout = self.ui.content.layout()
 
         self.segment_control = SegmentControls.SegmentControls()
         self.segments_table = SegmentsTable.SegementsTableWidget(self.lumen_core.segments)
         self.segments_table.set_selection_change_callback(self.segment_table_selection_change)
 
+        num_samples = 1000
+        img_min,img_max = self.lumen_core.get_image_range()
+
+
+        bins = self.lumen_core.get_image_histogram(20,num_samples)
+        hist = HistogramWidget("Image Histogram", bins, img_min, 0, img_max/2, num_samples)
+        hist.setFixedHeight(280)
+        
+       
+
+
 
         self.ui.content.layout().addWidget(self.segment_control)
         self.ui.content.layout().addWidget(QLabel("Segments"))
         self.ui.content.layout().addWidget(self.segments_table)
+        slider = QDoubleSpinBox()
+        slider.setRange(img_min, img_max)
+        slider.setSingleStep(1)
 
+        layout.addWidget(hist)
+        layout.addWidget(QLabel("Segment Isoalue"))
+        layout.addWidget(slider)
         self.segment_control.add_segment_btn.clicked.connect(self.addSegment)
         self.segment_control.remove_segment_btn.clicked.connect(self.removeSegment)
     def load_welcome_widget(self):
@@ -131,6 +151,14 @@ class LumenMainWindow(QMainWindow):
             self.load_welcome_widget()
         elif idx==1:
             self.load_segment_editor()
+        elif idx ==2:
+            self.load_surface_recon_module()
+    def load_surface_recon_module(self):
+        self.clear_layout(self.ui.content.layout())
+
+        layout = self.ui.content.layout()
+
+        
        
         
         

@@ -2,9 +2,7 @@ from typing import List, Optional
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QMessageBox
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import vtk
-import os
 
-from core import DicomLoader
 
 from .ImageViewerUI import Ui_ImageViewerUI
 

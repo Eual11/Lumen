@@ -28,6 +28,17 @@ def vtkImageToSITKImage(vtk_img: vtkImageData,)->Image:
     sitk_image.SetSpacing(spacing)
     sitk_image.SetOrigin(origin)
 
+    if int(vtkVersion.GetVTKMajorVersion())  >= 9:
+
+        d = []
+
+        for y in range(3):
+            for x in range(3):
+                d.append(-direction.GetElement(y,x))
+        sitk_image.SetDirection(d)
+
+
+    return sitk_image
 def vtkImageToNumpyArr(vtk_img: vtkImageData,)->ndarray:
 
     """Convert a VTK image to a numpy ndarray , via VTK numpy_support."""

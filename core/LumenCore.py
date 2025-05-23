@@ -1,4 +1,5 @@
 from enum import Enum
+from random import randrange
 from typing import List, Optional, Tuple
 import time
 from SimpleITK import GetImageFromArray
@@ -12,7 +13,7 @@ from core import DicomLoader, DymanicPipeline
 from vtk import vtkActor, vtkAlgorithm, vtkColorTransferFunction, vtkCubeSource, vtkFixedPointVolumeRayCastMapper, vtkFlyingEdges3D, vtkGPUVolumeRayCastMapper, vtkImageData, vtkImageFlip, vtkImageGaussianSmooth, vtkImageMedian3D, vtkImageSobel3D, vtkImageThreshold, vtkMarchingCubes, vtkOutputWindow, vtkPiecewiseFunction, vtkPolyDataMapper, vtkVolume, vtkVolumeProperty,VTK_INT
 
 from core.Segment import Segment
-from utils.utils import save_numpy_arr_as_png, save_sitk_image, vtkarrayToVtkImageData
+from utils.utils import save_numpy_arr_as_png, save_sitk_image, vtkImageToNumpyArr, vtkarrayToVtkImageData
 
 
 class RenderMethods(Enum):
@@ -40,6 +41,8 @@ class Lumen:
 
         self.selected_segment =-1
         self.segment_name_idx =1
+        #Used for rendering
+        self.surface_iso_value = 100
 
     def get_renderer(self):
         return self.renderer
@@ -61,6 +64,12 @@ class Lumen:
     def cleanup(self):
         self.viewer.cleanup()
         self.renderer.cleanup()
+
+    def get_image_size(self):
+        extent = self.loader.get_image_dimensions()
+        size = (extent[1]-extent[0]+1, extent[3]-extent[2]+1, extent[5]-extent[4]+1)
+        return size
+
     def create_segement(self, name:str="Segment", color:Tuple[int,int,int]=(0,0,0), debug=False):
 
         # Segements have the same size as the image currently loaded by the image loader
@@ -140,7 +149,7 @@ class Lumen:
                 mcube.SetInputData(imgData)
             else:
                 mcube.SetInputConnection(self.image_pipeline.get_ouput_port())
-            mcube.SetValue(0, isoValue)
+            mcube.SetValue(0, self.surface_iso_value)
             mcube.Update()
 
         mapper = vtkPolyDataMapper()
@@ -208,6 +217,30 @@ class Lumen:
         else:
             # TODO: Save as STL
             pass
+    def get_image_range(self):
+        if self.image_pipeline:
+           img= self.image_pipeline.get_output_data()
+           arr = vtkImageToNumpyArr(img) 
+           return arr.min(), arr.max() 
+        return 0,0
+    def get_image_histogram(self,num_bins:int, n_samples:int):
+        if not self.image_pipeline:
+            return []
+        img_min, img_max = self.get_image_range()
+        bin_width = (img_max-img_min+1) //num_bins
+        x,y,z = self.get_image_size()
+
+        img_arr = vtkImageToNumpyArr(self.image_pipeline.get_output_data())
+
+        histogram_arr = [0]*(num_bins+1)
+        for _ in range(n_samples):
+            val = img_arr[randrange(z),randrange(y),randrange(x)]
+            idx =(val-img_min) // bin_width
+            if idx < len(histogram_arr):
+                histogram_arr[idx]+=1
+
+
+        return histogram_arr
 
 
 

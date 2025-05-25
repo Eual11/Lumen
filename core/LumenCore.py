@@ -10,6 +10,7 @@ from app.widgets.DicomViewer import DicomViewer
 from app.widgets.Renderer import Renderer
 from core import DicomLoader, DymanicPipeline
 
+from core.SegmentOperationCommand import ThresholdCommand
 from vtk import vtkActor, vtkAlgorithm, vtkColorTransferFunction, vtkCubeSource, vtkFixedPointVolumeRayCastMapper, vtkFlyingEdges3D, vtkGPUVolumeRayCastMapper, vtkImageData, vtkImageFlip, vtkImageGaussianSmooth, vtkImageMedian3D, vtkImageSobel3D, vtkImageThreshold, vtkMarchingCubes, vtkOutputWindow, vtkPiecewiseFunction, vtkPolyDataMapper, vtkVolume, vtkVolumeProperty,VTK_INT
 
 from core.Segment import Segment
@@ -109,12 +110,13 @@ class Lumen:
             name+=f"{self.segment_name_idx}"
             self.segment_name_idx+=1
         new_segement = Segment(name, size, color)
-
+       
         if(debug):
             print(new_segement)
 
         self.segments.append(new_segement)
         self.viewer.add_segment_overlay(new_segement)
+       
     def get_segment(self,idx:int) -> Segment:
         if 0<=idx<len(self.segments):
             return self.segments[idx]

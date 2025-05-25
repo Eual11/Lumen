@@ -14,6 +14,8 @@ class Segment:
         #TODO: Figure that out :")
         self.mask = np.zeros(volume_size, dtype=np.int8)
 
+        # self.mask[0,:,:]=1
+
         self.color = color
         self.volume_size = volume_size
         self.visibility = True

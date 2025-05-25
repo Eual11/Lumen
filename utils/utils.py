@@ -1,4 +1,4 @@
-from vtk import vtkDataArray, vtkImageData, vtkVersion, VTK_INT
+from vtk import VTK_CHAR, vtkDataArray, vtkImageData, vtkVersion, VTK_INT
 from numpy import ndarray
 from vtkmodules.util import numpy_support
 from SimpleITK import Image, GetArrayFromImage, GetImageFromArray,RescaleIntensity,Cast,sitkUInt16, WriteImage, sitkUInt8
@@ -72,6 +72,11 @@ def SITKImageTOVtkImageData(sitk_img: Image)->vtkImageData:
     numpy_shape = numpy_arr.shape
     vtk_arr = numpy_support.numpy_to_vtk(numpy_arr.ravel(), deep=False, array_type=VTK_INT)
     return vtkarrayToVtkImageData(vtk_arr, numpy_shape[::-1], sitk_img.GetSpacing())
+def numpyArrToVtkImageData(numpy_arr:ndarray,spacing, arr_type)->vtkImageData:
+    numpy_shape = numpy_arr.shape
+    vtk_arr = numpy_support.numpy_to_vtk(numpy_arr.ravel(), deep=False, array_type=arr_type)
+    return vtkarrayToVtkImageData(vtk_arr, numpy_shape[::-1], spacing)
+
 
 
 # save a sitk_img to png, this only support 2D images and 3D image with only a depth of 1

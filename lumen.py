@@ -72,7 +72,7 @@ class LumenMainWindow(QMainWindow):
         self.lumen_core.cleanup()
         return super().closeEvent(event)
     def addSegment(self):
-        self.lumen_core.create_segement(color=(1,1,1))
+        self.lumen_core.create_segement(color=(255,1,1))
         self.segments_table.update_model()
     def removeSegment(self):
        self.lumen_core.delete_selected_segment()
@@ -115,7 +115,7 @@ class LumenMainWindow(QMainWindow):
         layout = self.ui.content.layout()
 
         self.segment_control = SegmentControls.SegmentControls()
-        self.segments_table = SegmentsTable.SegementsTableWidget(self.lumen_core.segments)
+        self.segments_table = SegmentsTable.SegementsTableWidget(self.lumen_core.segments,self.lumen_core)
         self.segments_table.set_selection_change_callback(self.segment_table_selection_change)
 
         num_samples = 1000

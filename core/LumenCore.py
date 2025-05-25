@@ -51,9 +51,33 @@ class Lumen:
 
     def reset_renderer(self):
         self.renderer.reset()
+    def set_segment_visibility(self,idx,value):
+        if idx <0 or idx >= len(self.segments):
+            return
+        segment = self.segments[idx]
+
+        segment.visibility = value
+
+        self.viewer.set_segment_visibility(segment, value)
+    def set_segment_color(self,idx,color:Tuple[int,int,int]):
+        if idx <0 or idx >= len(self.segments):
+            return
+        segment = self.segments[idx]
+
+        segment.color = color
+
+        self.viewer.set_segment_color(segment, color)
+
+
+
+
+
+
     def delete_selected_segment(self):
         if self.selected_segment <0 or self.selected_segment >= len(self.segments):
             return
+        segment = self.segments[self.selected_segment]
+        self.viewer.remove_segment_overlay(segment)
         self.segments.pop(self.selected_segment)
     def render_selected_segment(self):
         if self.selected_segment <0 or self.selected_segment >= len(self.segments):
@@ -76,7 +100,8 @@ class Lumen:
         extent = self.loader.get_image_dimensions()
         if( not (extent[1] or extent[3] or extent[5])):
             return
-        size = (extent[1]-extent[0]+1, extent[3]-extent[2]+1, extent[5]-extent[4]+1)
+        #Reversed because Numpy image shape is (depth, height, width)
+        size = (extent[1]-extent[0]+1, extent[3]-extent[2]+1, extent[5]-extent[4]+1)[::-1]
         if(not (size[0] or size[1] or size[2])):
             return
         name_exists = name in [s.name for s in self.segments]
@@ -89,6 +114,7 @@ class Lumen:
             print(new_segement)
 
         self.segments.append(new_segement)
+        self.viewer.add_segment_overlay(new_segement)
     def get_segment(self,idx:int) -> Segment:
         if 0<=idx<len(self.segments):
             return self.segments[idx]

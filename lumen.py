@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QApplication, QDoubleSpinBox, QFileDialog, QLabel,
 from app.HistogramWidget import HistogramWidget
 from app.LumenMainWindow2 import Ui_MainWindow
 from app.WelcomeWidget import WelcomeWidget
-from app.widgets import SegmentControls, SegmentsTable
+from app.widgets import SegmentControls, SegmentOperationsWidget, SegmentsTable
 import app.widgets.RCS_rc
 import sys
 from core.LumenCore import Lumen
@@ -115,8 +115,11 @@ class LumenMainWindow(QMainWindow):
         layout = self.ui.content.layout()
 
         self.segment_control = SegmentControls.SegmentControls()
+        self.segment_operations = SegmentOperationsWidget.SegmentOperationsWidget()
         self.segments_table = SegmentsTable.SegementsTableWidget(self.lumen_core.segments,self.lumen_core)
         self.segments_table.set_selection_change_callback(self.segment_table_selection_change)
+        self.segments_table.setMinimumHeight(320)
+        self.segment_operations.setMinimumHeight(180)
 
         num_samples = 1000
         img_min,img_max = self.lumen_core.get_image_range()
@@ -133,6 +136,8 @@ class LumenMainWindow(QMainWindow):
         self.ui.content.layout().addWidget(self.segment_control)
         self.ui.content.layout().addWidget(QLabel("Segments"))
         self.ui.content.layout().addWidget(self.segments_table)
+        self.ui.content.layout().addWidget(QLabel("Segment Operations"))
+        self.ui.content.layout().addWidget(self.segment_operations)
         slider = QDoubleSpinBox()
         slider.setRange(img_min, img_max)
         slider.setSingleStep(1)

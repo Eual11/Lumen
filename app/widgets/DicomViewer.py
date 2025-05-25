@@ -150,6 +150,16 @@ class DicomViewer(QWidget):
         lut.SetTableValue(1, cols[0], cols[1], cols[2],0.5)
         lut.Modified()
         self.render_window.Render()
+    def update_segment_mask(self, segment:Segment):
+        segment_info = self.segment_overlay_masks[segment]
+
+        img_data = numpyArrToVtkImageData(segment.mask, self.spacing, vtk.VTK_CHAR)
+
+        mapper = segment_info['actor'].GetMapper()
+        mapper.SetInputData(img_data)
+        mapper.Update()
+
+        self.render_window.Render()
 
     def showErrorMessage(self, title, desc):
         QMessageBox.critical(self, title, desc)

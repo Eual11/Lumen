@@ -2,6 +2,14 @@
   <qresource prefix="core">
     <file>logo.jpg</file>
   </qresource>
+  <qresource prefix="segmen-operation">
+    <file>icons/erase.svg</file>
+    <file>icons/grow_from_seed.svg</file>
+    <file>icons/paint.svg</file>
+    <file>icons/select.svg</file>
+    <file>icons/threshold.svg</file>
+    <file>icons/watershed.svg</file>
+  </qresource>
   <qresource prefix="saveIcon">
     <file>icons8-reset-50.png</file>
     <file>icons8-module-64.png</file>
@@ -14,10 +22,10 @@
     <file>minus-button.png</file>
     <file>plus.png</file>
   </qresource>
-   <qresource prefix="newPrefix">
+  <qresource prefix="newPrefix">
     <file>icons8-save-100.png</file>
   </qresource>
- <qresource prefix="segment_table">
+  <qresource prefix="segment_table">
     <file>color-wheel.png</file>
     <file>eye.png</file>
     <file>hidden.png</file>

@@ -1,16 +1,17 @@
 from PySide6.QtCore import QAbstractTableModel, QEvent, QItemSelection, QModelIndex, Qt
 from PySide6.QtGui import QColor, QIcon, QMouseEvent, QPainter
 from typing import List,Tuple
-
+from core import LumenCore
 from PySide6.QtWidgets import QApplication, QColorDialog, QHeaderView, QStyledItemDelegate, QTableView, QVBoxLayout, QWidget
 from core import Segment
 class SegementTableModel(QAbstractTableModel):
-    def __init__(self, data:List[Segment.Segment]):
+    def __init__(self, data:List[Segment.Segment],data_owner:LumenCore.Lumen):
         super().__init__()
 
         self._data_ref = data
         self.ROWS = 0
         self.COLS =0
+        self.data_owner = data_owner
 
         self.update_internal_data()
 
@@ -102,6 +103,9 @@ class SegementTableModel(QAbstractTableModel):
         self.COLS = len(self._data[0]) if self._data else 3
 
 class SegementColorDelegate(QStyledItemDelegate):
+    def __init__(self,data_owner:LumenCore.Lumen, parent=None):
+        super().__init__()
+        self.data_owner:LumenCore.Lumen = data_owner
 
     def createEditor(self, parent, option, index):
 
@@ -111,6 +115,8 @@ class SegementColorDelegate(QStyledItemDelegate):
 
         if new_color.isValid():
            index.model().setData(index, new_color.toTuple(), role=Qt.EditRole)
+           self.data_owner.set_segment_color(index.row(), new_color.toTuple())
+            
 
     def paint(self,painter:QPainter, option, index):
         color = index.model().data(index, role = Qt.BackgroundRole )
@@ -121,8 +127,9 @@ class VisibilityDelegate(QStyledItemDelegate):
 
     def createEditor(self, parent, option, index):
         return None
-    def __init__(self, parent = None) -> None:
+    def __init__(self,data_owner:LumenCore.Lumen,parent=None) -> None:
         super().__init__()
+        self.data_owner:LumenCore.Lumen = data_owner
 
         # Loading display icons
         self.open_eye = QIcon(":/segment_table/eye.png")
@@ -150,21 +157,23 @@ class VisibilityDelegate(QStyledItemDelegate):
         if event.type() == QEvent.Type.MouseButtonRelease and  event.button() == Qt.MouseButton.LeftButton:
             current = bool(model.data(index, Qt.DisplayRole))
             model.setData(index, not current, role = Qt.EditRole)
+            self.data_owner.set_segment_visibility(index.row(), not current)
             return True
         return False
 
 
 class SegementsTableWidget(QWidget):
-    def __init__(self, data, selection_callback=None, parent=None):
+    def __init__(self, data,data_owner, selection_callback=None, parent=None):
         super().__init__(parent)
 
         self.selection_callback = selection_callback
         self.data = data
+        self.data_owner = data_owner
 
 
         # Table Model
 
-        self.model = SegementTableModel(self.data)
+        self.model = SegementTableModel(self.data,data_owner)
 
         self.view = QTableView()
 
@@ -190,8 +199,8 @@ class SegementsTableWidget(QWidget):
         """)
 
         self.view.selectionModel().selectionChanged.connect(self.on_selection_changed)
-        self.color_delegate = SegementColorDelegate()
-        self.visibility_delegate = VisibilityDelegate()
+        self.color_delegate = SegementColorDelegate(self.data_owner)
+        self.visibility_delegate = VisibilityDelegate(self.data_owner)
 
         self.view.setItemDelegateForColumn(1,self.color_delegate)
         self.view.setItemDelegateForColumn(2,self.visibility_delegate)

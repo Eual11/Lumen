@@ -68,6 +68,12 @@ class Lumen:
         segment.color = color
 
         self.viewer.set_segment_color(segment, color)
+    def get_selected_segment(self):
+        if self.selected_segment <0 or self.selected_segment >= len(self.segments):
+            return None
+
+
+        return self.segments[self.selected_segment]
 
 
 
@@ -122,6 +128,11 @@ class Lumen:
             return self.segments[idx]
         else:
             raise IndexError("Segment Index out of bounds")
+    def update_selected_segment_overlay_mask(self):
+        selected_segment = self.get_selected_segment()
+        if not selected_segment:
+            return
+        self.viewer.update_segment_mask(selected_segment)
     def render_segment(self,idx:int, method:RenderMethods):
         if 0 <= idx < len(self.segments):
             segment = self.segments[idx]

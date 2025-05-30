@@ -9,6 +9,7 @@ from app.WelcomeWidget import WelcomeWidget
 from app.widgets import SegmentControls, SegmentOperationsWidget, SegmentsTable
 import app.widgets.RCS_rc
 import sys
+from app.widgets.ThresholdDialog import ThresholdDialog, create_threshold_dialog
 from core.LumenCore import Lumen
 class LumenMainWindow(QMainWindow):
     def __init__(self)->None:
@@ -40,6 +41,10 @@ class LumenMainWindow(QMainWindow):
         self.ui.btnLoad.clicked.connect(self.load)
         self.ui.btnResetRenderer.clicked.connect(self.resetRenderer)
 
+
+        # Dialogs 
+
+        self.threshold_dialog = ThresholdDialog(None)
 
 
         # SidePanel UI
@@ -116,10 +121,12 @@ class LumenMainWindow(QMainWindow):
 
         self.segment_control = SegmentControls.SegmentControls()
         self.segment_operations = SegmentOperationsWidget.SegmentOperationsWidget()
+        self.segment_operations.ui.thresholdBtn.clicked.connect(lambda:create_threshold_dialog(self.lumen_core))
         self.segments_table = SegmentsTable.SegementsTableWidget(self.lumen_core.segments,self.lumen_core)
         self.segments_table.set_selection_change_callback(self.segment_table_selection_change)
         self.segments_table.setMinimumHeight(320)
         self.segment_operations.setMinimumHeight(180)
+
 
         num_samples = 1000
         img_min,img_max = self.lumen_core.get_image_range()

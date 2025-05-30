@@ -7,6 +7,7 @@ from app.HistogramWidget import HistogramWidget
 from app.LumenMainWindow2 import Ui_MainWindow
 from app.WelcomeWidget import WelcomeWidget
 from app.widgets import SegmentControls, SegmentOperationsWidget, SegmentsTable
+from app.widgets.DicomViewer import ViewerMode
 import app.widgets.RCS_rc
 import sys
 from app.widgets.ThresholdDialog import ThresholdDialog, create_threshold_dialog
@@ -85,9 +86,10 @@ class LumenMainWindow(QMainWindow):
     @QtCore.Slot()
     def segment_table_selection_change(self, selected:QtCore.QItemSelection, deselected:QtCore.QItemSelection):
         if not len(selected.indexes()):
-            self.lumen_core.selected_segment = -1
-        row = selected.indexes()[0].row()
-        self.lumen_core.selected_segment = row
+            self.lumen_core.set_selected_segment(-1)
+        else:
+            row = selected.indexes()[0].row()
+            self.lumen_core.set_selected_segment(row)
     def disconnect_signals(self, widget:QWidget):
         for sig in getattr(widget, "_connected_signals",[]):
             try:
@@ -121,7 +123,15 @@ class LumenMainWindow(QMainWindow):
 
         self.segment_control = SegmentControls.SegmentControls()
         self.segment_operations = SegmentOperationsWidget.SegmentOperationsWidget()
+
+
+        # Segment Operations
         self.segment_operations.ui.thresholdBtn.clicked.connect(lambda:create_threshold_dialog(self.lumen_core))
+        self.segment_operations.ui.paintBtn.clicked.connect(lambda: self.lumen_core.viewer.set_viewer_mode(ViewerMode.PAINT))
+        self.segment_operations.ui.eraseBtn.clicked.connect(lambda: self.lumen_core.viewer.set_viewer_mode(ViewerMode.ERASE))
+
+
+
         self.segments_table = SegmentsTable.SegementsTableWidget(self.lumen_core.segments,self.lumen_core)
         self.segments_table.set_selection_change_callback(self.segment_table_selection_change)
         self.segments_table.setMinimumHeight(320)

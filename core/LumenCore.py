@@ -74,6 +74,14 @@ class Lumen:
 
 
         return self.segments[self.selected_segment]
+    def set_selected_segment(self, idx:int):
+        if idx <0 or idx >= len(self.segments):
+            self.selected_segment = -1
+            self.viewer.set_selected_segment(None)
+        else:
+            self.selected_segment = idx
+            self.viewer.set_selected_segment(self.segments[self.selected_segment])
+  
 
 
 

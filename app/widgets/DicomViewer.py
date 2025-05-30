@@ -1,6 +1,9 @@
 from typing import List, Optional,Tuple
+from enum import Enum
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QMessageBox
 from typing import TypedDict
+from numpy import spacing
+import numpy
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import vtk
 
@@ -13,6 +16,12 @@ class SegmentActorInfo(TypedDict):
     actor: vtk.vtkImageSlice
     mapper: vtk.vtkImageResliceMapper
     lut: vtk.vtkLookupTable
+
+class ViewerMode(Enum):
+    NAVIGATION = 1 
+    PAINT = 2
+    ERASE = 3
+    SEED_PLACEMENT = 4
 
 class DicomViewer(QWidget):
     def __init__(self, source: Optional[vtk.vtkAlgorithmOutput] = None, parent=None):
@@ -28,6 +37,11 @@ class DicomViewer(QWidget):
 
         self.renderer = vtk.vtkRenderer()
         self.render_window = self.vtkInteractor.GetRenderWindow()
+
+        #Testing interactor events
+        self.render_window.GetInteractor().AddObserver(vtk.vtkCommand.LeftButtonPressEvent, self.handle_mouse_movement)
+        self.render_window.GetInteractor().AddObserver(vtk.vtkCommand.LeftButtonPressEvent, self.handle_left_click)
+        self.render_window.GetInteractor().AddObserver(vtk.vtkCommand.LeftButtonReleaseEvent, self.handle_left_release)
         self.render_window.AddRenderer(self.renderer)
 
         self.mapper = vtk.vtkImageResliceMapper()
@@ -46,8 +60,15 @@ class DicomViewer(QWidget):
         self.extent = (0, 0, 0, 0, 0, 0)
         self.origin = (0.0, 0.0, 0.0)
 
+        self.slice_index = 0
+
 
         self.segment_overlay_masks: dict[Segment, SegmentActorInfo] = {}
+
+        self.selected_segment: Optional[Segment] = None
+        self.viewer_mode = ViewerMode.NAVIGATION
+
+        self.is_painting = False
 
         self.updateSource(source)
 
@@ -60,6 +81,7 @@ class DicomViewer(QWidget):
     def setSliceIdx(self, idx: int):
         if self.mapper:
             z = self.origin[2] + idx * self.spacing[2]
+            self.slice_index = z
 
             plane = vtk.vtkPlane()
             plane.SetOrigin(self.origin[0], self.origin[1], z)
@@ -158,9 +180,80 @@ class DicomViewer(QWidget):
         mapper = segment_info['actor'].GetMapper()
         mapper.SetInputData(img_data)
         mapper.Update()
+    def set_selected_segment(self,segment):
+        self.selected_segment = segment
+
 
         self.render_window.Render()
+    def set_viewer_mode(self,mode:ViewerMode):
+        self.viewer_mode = mode
+
+
 
     def showErrorMessage(self, title, desc):
         QMessageBox.critical(self, title, desc)
+    def handle_left_click(self,obj, event):
+        self.is_painting = True
+        
+
+
+    def handle_left_release(self, obj,event):
+        #TODO: issue with release event
+        self.is_painting = False
+
+    def paint_at_mouse(self, obj):
+        x,y = obj.GetEventPosition()
+        picker = vtk.vtkCellPicker()
+        picker.SetTolerance(0.0005)
+        picker.Pick(x,y,self.slice_index, self.renderer)
+
+        world_pos = picker.GetPickPosition()
+
+        x,y,z = [round((world_pos[i]-self.origin[i])/self.spacing[i]) for i in range(len(world_pos))]
+
+
+        if x <0 or x >self.extent[1] or y <0 or y>self.extent[3] or z <0 or z > self.extent[5]:
+            return
+
+        # TODO: add bruh and eraser radius
+        if self.viewer_mode == ViewerMode.PAINT and self.is_painting :
+            self.paint_segment(x,y,z,10)
+        if self.viewer_mode == ViewerMode.ERASE and self.is_painting :
+            self.erase_segment(x,y,z,10)
+
+
+    def handle_mouse_movement(self,obj,event):
+        if self.is_painting:
+            self.paint_at_mouse(obj)
+        #TODO: depending on the orgin interaction mode we will either, do nothing, paint on the mask or set seed positio
+    def paint_segment(self, x0:int,y0:int,z0:int, r:int):
+
+        if not self.selected_segment:
+            return
+        mask = self.selected_segment.mask
+        shape = mask.shape
+        z,y,x = numpy.ogrid[:shape[0], :shape[1], :shape[2]]
+
+        dist_sq =((x-x0)**2 + (y-y0)**2 <=r**2) & (z == self.slice_index) 
+
+        mask[dist_sq] = 1
+
+        self.update_segment_mask(self.selected_segment)
+    def erase_segment(self, x0:int,y0:int,z0:int, r:int):
+
+        if not self.selected_segment:
+            return
+        mask = self.selected_segment.mask
+        shape = mask.shape
+        z,y,x = numpy.ogrid[:shape[0], :shape[1], :shape[2]]
+
+        dist_sq =((x-x0)**2 + (y-y0)**2<=r**2) &(z == self.slice_index) 
+
+        mask[dist_sq] = 0
+
+        self.update_segment_mask(self.selected_segment)
+
+
+        
+
 

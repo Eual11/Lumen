@@ -7,6 +7,7 @@ import numpy
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import vtk
 
+from core.SegmentOperationCommand import RegionGrowCommand
 from utils.utils import numpyArrToVtkImageData
 
 from .ImageViewerUI import Ui_ImageViewerUI
@@ -68,6 +69,8 @@ class DicomViewer(QWidget):
         self.selected_segment: Optional[Segment] = None
         self.viewer_mode = ViewerMode.NAVIGATION
 
+        self.seed_placement_command: Optional[RegionGrowCommand] = None
+
         self.is_painting = False
 
         self.updateSource(source)
@@ -121,6 +124,9 @@ class DicomViewer(QWidget):
             self.renderImage()
         else:
             self.mapper.SetInputConnection(None)
+        self.seed_placement_command = None
+        self.clear_renderer()
+        self.renderer.Clear()
     def add_segment_overlay(self,segment:Segment):
         mapper = vtk.vtkImageResliceMapper()
         img_data = numpyArrToVtkImageData(segment.mask, self.spacing, vtk.VTK_CHAR)
@@ -158,6 +164,7 @@ class DicomViewer(QWidget):
         info = self.segment_overlay_masks[segment]
         self.renderer.RemoveActor(info['actor'])
         del self.segment_overlay_masks[segment]
+        self.seed_placement_command = None
 
         self.render_window.Render()
     def set_segment_visibility(self, segment:Segment, value):
@@ -173,7 +180,9 @@ class DicomViewer(QWidget):
         lut.Modified()
         self.render_window.Render()
     def update_segment_mask(self, segment:Segment):
-        segment_info = self.segment_overlay_masks[segment]
+        segment_info = self.segment_overlay_masks.get(segment, None)
+        if not segment_info:
+            return
 
         img_data = numpyArrToVtkImageData(segment.mask, self.spacing, vtk.VTK_CHAR)
 
@@ -193,7 +202,11 @@ class DicomViewer(QWidget):
     def showErrorMessage(self, title, desc):
         QMessageBox.critical(self, title, desc)
     def handle_left_click(self,obj, event):
-        self.is_painting = True
+        # perform region growing
+        if self.viewer_mode == ViewerMode.SEED_PLACEMENT:
+            self.region_grow_segment(obj)
+        if self.viewer_mode == ViewerMode.PAINT or self.viewer_mode == ViewerMode.ERASE:
+            self.is_painting = True
         
 
 
@@ -252,8 +265,49 @@ class DicomViewer(QWidget):
         mask[dist_sq] = 0
 
         self.update_segment_mask(self.selected_segment)
+    def region_grow_segment(self,obj):
+        x,y = obj.GetEventPosition()
+        picker = vtk.vtkCellPicker()
+        picker.SetTolerance(0.0005)
+        picker.Pick(x,y,self.slice_index, self.renderer)
+
+        world_pos = picker.GetPickPosition()
+
+        x,y,z = [round((world_pos[i]-self.origin[i])/self.spacing[i]) for i in range(len(world_pos))]
+
+
+        if x <0 or x >self.extent[1] or y <0 or y>self.extent[3] or z <0 or z > self.extent[5]:
+            return
+
+        
+        if self.seed_placement_command and self.selected_segment:
+            self.seed_placement_command.seed_list = [(x,y,z)]
+            self.seed_placement_command.execute()
+            self.update_segment_mask(self.selected_segment)
+    def clear_renderer(self):
+        actors = self.renderer.GetActors()
+        actors.InitTraversal()
+
+        for _ in range(actors.GetNumberOfItems()):
+            actor = actors.GetNextActor()
+            self.renderer.RemoveActor(actor)
+        actors2d = self.renderer.GetActors2D()
+
+        actors2d.InitTraversal()
+
+        for _ in range(actors2d.GetNumberOfItems()):
+            actor = actors2d.GetNextActor2D()
+            self.renderer.RemoveActor2D(actor)
+    def clear_segment_overlays(self):
+        for info in self.segment_overlay_masks.values():
+            self.renderer.RemoveActor(info['actor'])
+        self.segment_overlay_masks.clear()
 
 
         
 
+        
+
+
+        
 

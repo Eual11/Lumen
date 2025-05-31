@@ -40,7 +40,7 @@ class DicomViewer(QWidget):
         self.render_window = self.vtkInteractor.GetRenderWindow()
 
         #Testing interactor events
-        self.render_window.GetInteractor().AddObserver(vtk.vtkCommand.LeftButtonPressEvent, self.handle_mouse_movement)
+        self.render_window.GetInteractor().AddObserver(vtk.vtkCommand.MouseMoveEvent, self.handle_mouse_movement)
         self.render_window.GetInteractor().AddObserver(vtk.vtkCommand.LeftButtonPressEvent, self.handle_left_click)
         self.render_window.GetInteractor().AddObserver(vtk.vtkCommand.LeftButtonReleaseEvent, self.handle_left_release)
         self.render_window.AddRenderer(self.renderer)
@@ -73,6 +73,9 @@ class DicomViewer(QWidget):
 
         self.is_painting = False
 
+        self.text_actor:Optional[vtk.vtkTextActor] = None
+        self.image_data:Optional[vtk.vtkImageData] = None
+
         self.updateSource(source)
 
     def setPatientDat(self, arr: List[str]):
@@ -96,6 +99,7 @@ class DicomViewer(QWidget):
                 mapper.SetSlicePlane(plane)
                 mapper.Update()
             self.ui.sliceIdxLabel.setText(f"Slice: {idx + 1}/{self.ui.sliceSlider.maximum() + 1}")
+            self.update_text_actor(0,0,"")
             self.renderImage()
 
     def cleanup(self):
@@ -106,11 +110,11 @@ class DicomViewer(QWidget):
         if source:
             self.mapper.SetInputConnection(source)
             source.GetProducer().Update()
-            image_data = source.GetProducer().GetOutput()
+            self.image_data = source.GetProducer().GetOutput()
 
-            self.spacing = image_data.GetSpacing()
-            self.origin = image_data.GetOrigin()
-            self.extent = image_data.GetExtent()
+            self.spacing = self.image_data.GetSpacing()
+            self.origin = self.image_data.GetOrigin()
+            self.extent = self.image_data.GetExtent()
 
             zmin, zmax = self.extent[4], self.extent[5]
 
@@ -127,6 +131,7 @@ class DicomViewer(QWidget):
         self.seed_placement_command = None
         self.clear_renderer()
         self.renderer.Clear()
+        self.setup_text_actor()
     def add_segment_overlay(self,segment:Segment):
         mapper = vtk.vtkImageResliceMapper()
         img_data = numpyArrToVtkImageData(segment.mask, self.spacing, vtk.VTK_CHAR)
@@ -201,12 +206,33 @@ class DicomViewer(QWidget):
 
     def showErrorMessage(self, title, desc):
         QMessageBox.critical(self, title, desc)
+    def setup_text_actor(self):
+        if self.text_actor:
+            self.renderer.RemoveActor2D(self.text_actor)
+        self.text_actor = vtk.vtkTextActor()
+        property = self.text_actor.GetTextProperty()
+        property.SetFontSize(12)
+        property.SetShadow(True)
+        property.SetShadowOffset(1,-1)
+        property.SetBackgroundColor(0,0,0)
+        property.SetColor(1.0,1.0,1.0)
+
+        self.text_actor.SetDisplayPosition(10,10)
+        self.text_actor.SetInput("")
+
+        self.renderer.AddActor2D(self.text_actor)
+
+    def update_text_actor(self, x:int, y:int, text:str):
+        if self.text_actor:
+            self.text_actor.SetInput(text)
+            self.text_actor.SetDisplayPosition(x+15,y-15)
+            self.render_window.Render()
     def handle_left_click(self,obj, event):
         # perform region growing
         if self.viewer_mode == ViewerMode.SEED_PLACEMENT:
             self.region_grow_segment(obj)
         if self.viewer_mode == ViewerMode.PAINT or self.viewer_mode == ViewerMode.ERASE:
-            self.is_painting = True
+            self.is_painting = not self.is_painting
         
 
 
@@ -215,17 +241,20 @@ class DicomViewer(QWidget):
         self.is_painting = False
 
     def paint_at_mouse(self, obj):
-        x,y = obj.GetEventPosition()
+        x_pos,y_pos = obj.GetEventPosition()
         picker = vtk.vtkCellPicker()
         picker.SetTolerance(0.0005)
-        picker.Pick(x,y,self.slice_index, self.renderer)
+        picker.Pick(x_pos,y_pos,self.slice_index, self.renderer)
 
         world_pos = picker.GetPickPosition()
 
         x,y,z = [round((world_pos[i]-self.origin[i])/self.spacing[i]) for i in range(len(world_pos))]
 
 
+
+
         if x <0 or x >self.extent[1] or y <0 or y>self.extent[3] or z <0 or z > self.extent[5]:
+            self.update_text_actor(0,0,"")
             return
 
         # TODO: add bruh and eraser radius
@@ -235,10 +264,27 @@ class DicomViewer(QWidget):
             self.erase_segment(x,y,z,10)
 
 
+
     def handle_mouse_movement(self,obj,event):
-        if self.is_painting:
+       x_pos,y_pos = obj.GetEventPosition()
+       picker = vtk.vtkCellPicker()
+       picker.SetTolerance(0.0005)
+       picker.Pick(x_pos,y_pos,self.slice_index, self.renderer)
+
+       world_pos = picker.GetPickPosition()
+
+       x,y,z = [round((world_pos[i]-self.origin[i])/self.spacing[i]) for i in range(len(world_pos))]
+
+       if x <0 or x >self.extent[1] or y <0 or y>self.extent[3] or z <0 or z > self.extent[5]:
+            self.update_text_actor(0,0,"")
+            return
+       if self.is_painting:
             self.paint_at_mouse(obj)
-        #TODO: depending on the orgin interaction mode we will either, do nothing, paint on the mask or set seed positio
+       if self.image_data:
+            value = self.image_data.GetScalarComponentAsFloat(x,y,int(self.slice_index),0)
+            self.update_text_actor(x_pos,y_pos,str(value))
+
+       #TODO: depending on the orgin interaction mode we will either, do nothing, paint on the mask or set seed positio
     def paint_segment(self, x0:int,y0:int,z0:int, r:int):
 
         if not self.selected_segment:

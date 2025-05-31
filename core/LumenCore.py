@@ -92,8 +92,7 @@ class Lumen:
     def render_selected_segment(self):
         if self.selected_segment <0 or self.selected_segment >= len(self.segments):
             return
-        #TODO 
-        pass
+        self.render_segment(self.selected_segment, RenderMethods.MARCHING_CUBES)
 
     def cleanup(self):
         self.viewer.cleanup()
@@ -144,12 +143,14 @@ class Lumen:
             shape = img.GetDimensions()
             img_arr = numpy_support.vtk_to_numpy(img.GetPointData().GetScalars())
             dims = img.GetDimensions()
-            img_arr = img_arr.reshape(dims[0], dims[1], dims[2])
+            img_arr = img_arr.reshape(dims[2], dims[1], dims[1])
             final_img = mask*img_arr
+            iso_value = 10
+            print(iso_value)
             final_img_vtk_array =  numpy_support.numpy_to_vtk(final_img.ravel(), deep=False, array_type=VTK_INT)
             if method == RenderMethods.MARCHING_CUBES or method == RenderMethods.FLYING_EDGES:
                 final_vtk_img = vtkarrayToVtkImageData(final_img_vtk_array, shape,img.GetSpacing())
-                self.renderSurface(method, final_vtk_img, segment.meta_data["lower_threshold"],segment.color)
+                self.renderSurface(method, final_vtk_img,int(iso_value), segment.color)
             else:
                 raise NotImplemented
 
@@ -190,7 +191,7 @@ class Lumen:
                 mcube.SetInputData(imgData)
             else:
                 mcube.SetInputConnection(self.image_pipeline.get_ouput_port())
-            mcube.SetValue(0, self.surface_iso_value)
+            mcube.SetValue(0, isoValue)
             mcube.Update()
 
         mapper = vtkPolyDataMapper()

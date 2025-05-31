@@ -168,6 +168,8 @@ class LumenMainWindow(QMainWindow):
         layout.addWidget(slider)
         self.segment_control.add_segment_btn.clicked.connect(self.addSegment)
         self.segment_control.remove_segment_btn.clicked.connect(self.removeSegment)
+
+        self.segment_control.render_btn.clicked.connect(lambda:self.lumen_core.render_selected_segment())
     def load_welcome_widget(self):
         self.clear_layout(self.ui.content.layout())
 

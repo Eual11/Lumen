@@ -10,8 +10,10 @@ from app.widgets import SegmentControls, SegmentOperationsWidget, SegmentsTable
 from app.widgets.DicomViewer import ViewerMode
 import app.widgets.RCS_rc
 import sys
+from app.widgets.RegionGrowingDialog import create_region_grow_dialog
 from app.widgets.ThresholdDialog import ThresholdDialog, create_threshold_dialog
 from core.LumenCore import Lumen
+from core.SegmentOperationCommand import RegionGrowCommand
 class LumenMainWindow(QMainWindow):
     def __init__(self)->None:
         super().__init__()
@@ -42,6 +44,7 @@ class LumenMainWindow(QMainWindow):
         self.ui.btnLoad.clicked.connect(self.load)
         self.ui.btnResetRenderer.clicked.connect(self.resetRenderer)
 
+        self.segments_table = SegmentsTable.SegementsTableWidget(self.lumen_core.segments,self.lumen_core)
 
         # Dialogs 
 
@@ -73,6 +76,7 @@ class LumenMainWindow(QMainWindow):
     def load(self):
         dir = QFileDialog.getExistingDirectory(None, "Load Dicom Image")
         self.lumen_core.load_image(dir)
+        self.segments_table.update_model()
 
     def closeEvent(self, event)->None:
         self.lumen_core.cleanup()
@@ -129,10 +133,10 @@ class LumenMainWindow(QMainWindow):
         self.segment_operations.ui.thresholdBtn.clicked.connect(lambda:create_threshold_dialog(self.lumen_core))
         self.segment_operations.ui.paintBtn.clicked.connect(lambda: self.lumen_core.viewer.set_viewer_mode(ViewerMode.PAINT))
         self.segment_operations.ui.eraseBtn.clicked.connect(lambda: self.lumen_core.viewer.set_viewer_mode(ViewerMode.ERASE))
+        self.segment_operations.ui.regionBtn.clicked.connect(lambda: create_region_grow_dialog(self.lumen_core))
 
 
 
-        self.segments_table = SegmentsTable.SegementsTableWidget(self.lumen_core.segments,self.lumen_core)
         self.segments_table.set_selection_change_callback(self.segment_table_selection_change)
         self.segments_table.setMinimumHeight(320)
         self.segment_operations.setMinimumHeight(180)
@@ -168,6 +172,13 @@ class LumenMainWindow(QMainWindow):
         self.clear_layout(self.ui.content.layout())
 
         self.ui.content.layout().addWidget(self.welcome_widget)
+    def test_region_growing(self):
+        self.lumen_core.viewer.set_viewer_mode(ViewerMode.SEED_PLACEMENT)
+
+        segment = self.lumen_core.get_selected_segment()
+        if segment:
+            cmd = RegionGrowCommand(self.lumen_core.get_pipeline_output_data(), segment, 300,2000,[])
+            self.lumen_core.viewer.seed_placement_command = cmd
     def load_sidebar_ui(self, idx:int):
         if idx==0:
             self.load_welcome_widget()

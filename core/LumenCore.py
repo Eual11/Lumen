@@ -81,19 +81,14 @@ class Lumen:
         else:
             self.selected_segment = idx
             self.viewer.set_selected_segment(self.segments[self.selected_segment])
-  
-
-
-
-
-
-
+ 
     def delete_selected_segment(self):
         if self.selected_segment <0 or self.selected_segment >= len(self.segments):
             return
         segment = self.segments[self.selected_segment]
         self.viewer.remove_segment_overlay(segment)
         self.segments.pop(self.selected_segment)
+        self.set_selected_segment(-1)
     def render_selected_segment(self):
         if self.selected_segment <0 or self.selected_segment >= len(self.segments):
             return
@@ -171,10 +166,9 @@ class Lumen:
 
         #clearing pre-existing segments
         
-        self.segments.clear()
-
-
         self.viewer.updateSource(self.image_pipeline.get_ouput_port())
+        self.viewer.clear_segment_overlays()
+        self.segments.clear()
     def get_pipeline_output_port(self):
         if(self.image_pipeline):
             return self.image_pipeline.get_ouput_port()

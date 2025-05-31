@@ -22,7 +22,7 @@ class WelcomeWidget(QWidget):
 
         # Subtitle
         subtitle = QLabel("3D Reconstruction Tool for CT and MRI")
-        subtitle.setStyleSheet("font-size: 16px")
+        subtitle.setStyleSheet("font-size: 16px;")
         subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Add widgets to layout

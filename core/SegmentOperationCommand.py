@@ -56,6 +56,48 @@ class ThresholdCommand(SegmentOperationCommand):
 
        segment_meta_data["lower_threshold"] =min(self.lower_threshold, lower) 
        segment_meta_data["upper_threshold"] = max(self.upper_threshold, upper) 
+
+class RegionGrowCommand(SegmentOperationCommand):
+    lower_bound:int
+    upper_bound:int 
+    inside_value:int
+    outside_value:int 
+    _image:vtkImageData
+
+    operation:str
+
+    def __init__(self, image:vtkImageData, segment:Segment,  lower_bound:int, upper_bound:int, seed_list, op = "add", inside_value:int =1, outside_value:int =0):
+        super().__init__(segment)
+
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+
+        self.inside_value = inside_value
+        self.outside_value = outside_value
+
+        self.operation = op
+
+        self._filter = sitk.ConnectedThresholdImageFilter()
+
+        self._image = image
+        self.seed_list = seed_list
+
+    def execute(self):
+
+        self._filter.SetLower(self.lower_bound)
+        self._filter.SetUpper(self.upper_bound)
+        self._filter.SetSeedList(self.seed_list)
+        self._filter.SetReplaceValue(1)
+
+        sitk_img = vtkImageToSITKImage(self._image)
+
+        sitk_img:sitk.Image = self._filter.Execute(sitk_img)
+
+        sitk_arr = sitk.GetArrayFromImage(sitk_img)
+
+        sitk_arr = sitk_arr.reshape(sitk_img.GetSize()[::-1])
+
+        self.segment.apply_mask_update(sitk_arr, self.operation)
        
 
 

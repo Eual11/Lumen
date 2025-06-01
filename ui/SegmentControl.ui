@@ -97,25 +97,36 @@
         <property name="text">
          <string>Marching Cubes</string>
         </property>
+        <property name="icon">
+         <iconset resource="../RCS.qrc">
+          <normaloff>:/segmen-operation/icons/cubes.svg</normaloff>:/segmen-operation/icons/cubes.svg</iconset>
+        </property>
        </item>
        <item>
         <property name="text">
          <string>Flying Edges</string>
         </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>New Item</string>
+        <property name="icon">
+         <iconset resource="../RCS.qrc">
+          <normaloff>:/segmen-operation/icons/terahedron.svg</normaloff>:/segmen-operation/icons/terahedron.svg</iconset>
         </property>
        </item>
        <item>
         <property name="text">
          <string>CPU Volume RayCasting</string>
         </property>
+        <property name="icon">
+         <iconset resource="../RCS.qrc">
+          <normaloff>:/segmen-operation/icons/gray_grid.svg</normaloff>:/segmen-operation/icons/gray_grid.svg</iconset>
+        </property>
        </item>
        <item>
         <property name="text">
          <string>GPU Volume RayCasting</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../RCS.qrc">
+          <normaloff>:/segmen-operation/icons/color_grid.svg</normaloff>:/segmen-operation/icons/color_grid.svg</iconset>
         </property>
        </item>
       </widget>

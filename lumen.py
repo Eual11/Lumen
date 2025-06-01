@@ -7,6 +7,7 @@ from app.HistogramWidget import HistogramWidget
 from app.LumenMainWindow2 import Ui_MainWindow
 from app.WelcomeWidget import WelcomeWidget
 from app.widgets import SegmentControls, SegmentOperationsWidget, SegmentsTable
+from app.widgets.DicomLoadDialog import create_load_dicom_dialog
 from app.widgets.DicomViewer import ViewerMode
 import app.widgets.RCS_rc
 
@@ -44,7 +45,7 @@ class LumenMainWindow(QMainWindow):
         self.ui.viewPrimary.setLayout(l1)
         self.ui.viewSecondary1.setLayout(l2)
 
-        self.ui.btnLoad.clicked.connect(self.load)
+        self.ui.btnLoad.clicked.connect(lambda : create_load_dicom_dialog(self.lumen_core, self.segments_table))
         self.ui.btnResetRenderer.clicked.connect(self.resetRenderer)
 
         self.segments_table = SegmentsTable.SegementsTableWidget(self.lumen_core.segments,self.lumen_core)
@@ -75,12 +76,6 @@ class LumenMainWindow(QMainWindow):
     @QtCore.Slot()
     def resetRenderer(self):
         self.lumen_core.reset_renderer()
-    @QtCore.Slot()
-    def load(self):
-        dir = QFileDialog.getExistingDirectory(None, "Load Dicom Image")
-        self.lumen_core.load_image(dir)
-        self.segments_table.update_model()
-
     @QtCore.Slot()
     def render(self):
         method = self.segment_control.reconMethod.currentIndex()

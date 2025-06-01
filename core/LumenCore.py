@@ -169,9 +169,10 @@ class Lumen:
 
         #clearing pre-existing segments
         
+        self.segments.clear()
+
         self.viewer.updateSource(self.image_pipeline.get_ouput_port())
         self.viewer.clear_segment_overlays()
-        self.segments.clear()
     def get_pipeline_output_port(self):
         if(self.image_pipeline):
             return self.image_pipeline.get_ouput_port()
@@ -184,6 +185,9 @@ class Lumen:
             raise ValueError("No Image pipeline setup")
     def set_isovalue(self,value:int):
         self.surface_iso_value = value
+    def update_viewer(self):
+        if self.image_pipeline:
+            self.viewer.updateSource(self.image_pipeline.get_ouput_port())
 
         self.viewer.setPatientDat(self.loader.get_medical_property())
     def renderSurface(self, method:RenderMethods,imgData:Optional[vtkImageData]=None, isoValue = 128, color = (0,255,0)):

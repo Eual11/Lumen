@@ -23,6 +23,8 @@ class DynamicPipeline :
 
             current = f
         self.ouputport:Optional[vtkAlgorithmOutput] = current.GetOutputPort()
+        self.ouputport.Modified()
+
             
     def add_filter(self, filter:vtkAlgorithm, index =None):
         if not index:
@@ -30,6 +32,7 @@ class DynamicPipeline :
         else:
             self.filters.insert(index, filter)
         self._rebuild_pipeline()
+
 
     def remove_filter(self,index:int):
 
@@ -39,8 +42,12 @@ class DynamicPipeline :
     
 
     def get_ouput_port(self):
+        self._rebuild_pipeline()
+        if self.ouputport:
+            self.ouputport.GetProducer().Update()
         return self.ouputport
     def get_output_data(self):
+        self._rebuild_pipeline()
         if(self.ouputport):
             port = self.ouputport
             port.GetProducer().Update()

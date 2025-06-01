@@ -44,7 +44,7 @@ class MedianFilter(VTKPythonAlgorithmBase):
 
 
     def RequestData(self, request, inInfo, outInfo):
-
+        print("requested")
         input_data = vtk.vtkImageData.GetData(inInfo[0])
         out_data = vtk.vtkImageData.GetData(outInfo)
 

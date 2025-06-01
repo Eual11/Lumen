@@ -81,6 +81,7 @@ class Lumen:
         else:
             self.selected_segment = idx
             self.viewer.set_selected_segment(self.segments[self.selected_segment])
+
  
     def delete_selected_segment(self):
         if self.selected_segment <0 or self.selected_segment >= len(self.segments):
@@ -89,10 +90,10 @@ class Lumen:
         self.viewer.remove_segment_overlay(segment)
         self.segments.pop(self.selected_segment)
         self.set_selected_segment(-1)
-    def render_selected_segment(self):
+    def render_selected_segment(self, method:RenderMethods):
         if self.selected_segment <0 or self.selected_segment >= len(self.segments):
             return
-        self.render_segment(self.selected_segment, RenderMethods.MARCHING_CUBES)
+        self.render_segment(self.selected_segment, method)
 
     def cleanup(self):
         self.viewer.cleanup()
@@ -145,14 +146,15 @@ class Lumen:
             dims = img.GetDimensions()
             img_arr = img_arr.reshape(dims[2], dims[1], dims[1])
             final_img = mask*img_arr
-            iso_value = 10
-            print(iso_value)
             final_img_vtk_array =  numpy_support.numpy_to_vtk(final_img.ravel(), deep=False, array_type=VTK_INT)
+            final_vtk_img = vtkarrayToVtkImageData(final_img_vtk_array, shape,img.GetSpacing())
             if method == RenderMethods.MARCHING_CUBES or method == RenderMethods.FLYING_EDGES:
-                final_vtk_img = vtkarrayToVtkImageData(final_img_vtk_array, shape,img.GetSpacing())
+                iso_value = self.surface_iso_value
+                if "lower_threshold" in segment.meta_data:
+                    iso_value = segment.meta_data['lower_threshold']
                 self.renderSurface(method, final_vtk_img,int(iso_value), segment.color)
             else:
-                raise NotImplemented
+                self.renderVolume(final_vtk_img, method)
 
 
         else:
@@ -180,6 +182,8 @@ class Lumen:
             return self.image_pipeline.get_output_data()
         else:
             raise ValueError("No Image pipeline setup")
+    def set_isovalue(self,value:int):
+        self.surface_iso_value = value
 
         self.viewer.setPatientDat(self.loader.get_medical_property())
     def renderSurface(self, method:RenderMethods,imgData:Optional[vtkImageData]=None, isoValue = 128, color = (0,255,0)):
@@ -202,19 +206,21 @@ class Lumen:
 
         actor= vtkActor()
         actor.SetMapper(mapper)
-        actor.GetProperty().SetColor(*[c/255.0 for c in color])
+        actor.GetProperty().SetColor(*[c/255.0 for c in color[0:3]])
 
         self.renderer.addActor(actor)
     def add_filter(self, filter:vtkAlgorithm, index = None):
         if self.image_pipeline:
             self.image_pipeline.add_filter(filter, index)
-    def renderVolume(self, method:RenderMethods):
+    def renderVolume(self,imgData:Optional[vtkImageData], method:RenderMethods):
 
         
         mapper = vtkFixedPointVolumeRayCastMapper()
         if(method==RenderMethods.GPU_RAYCASTING):
             mapper = vtkGPUVolumeRayCastMapper()
-        if(self.image_pipeline):
+        if imgData :
+            mapper.SetInputData(imgData)
+        elif(self.image_pipeline):
             mapper.SetInputConnection(self.image_pipeline.get_ouput_port())
 
         # TODO: customizable opacity transfer and color tranfer point selection

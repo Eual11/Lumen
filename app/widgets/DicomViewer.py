@@ -7,7 +7,7 @@ import numpy
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import vtk
 
-from core.SegmentOperationCommand import RegionGrowCommand
+from core.SegmentOperationCommand import ConnectedRegionGrowCommand, RegionGrowCommand
 from utils.utils import numpyArrToVtkImageData
 
 from .ImageViewerUI import Ui_ImageViewerUI
@@ -69,7 +69,7 @@ class DicomViewer(QWidget):
         self.selected_segment: Optional[Segment] = None
         self.viewer_mode = ViewerMode.NAVIGATION
 
-        self.seed_placement_command: Optional[RegionGrowCommand] = None
+        self.seed_placement_command: Optional[RegionGrowCommand|ConnectedRegionGrowCommand] = None
 
         self.is_painting = False
 

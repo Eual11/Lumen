@@ -106,7 +106,54 @@ class RegionGrowCommand(SegmentOperationCommand):
         segment_meta_data["lower_threshold"] =min(self.lower_bound, lower) 
         segment_meta_data["upper_threshold"] = max(self.upper_bound, upper) 
 
+class ConnectedRegionGrowCommand(SegmentOperationCommand):
+    radius:int
+    iterations:int
+    multiplier:float
+    _image:vtkImageData
+
+    operation:str
+
+    def __init__(self, image:vtkImageData, segment:Segment, radius:int ,multiplier:float,iterations:int, seed_list, op = "add"):
+        
+        super().__init__(segment)
+
+        self.radius = radius 
+        self.iterations = iterations
+        self.multiplier = multiplier
+
+        self.operation = op
+
+        self._filter = sitk.ConfidenceConnectedImageFilter()
+
+        self._image = image
+        self.seed_list = seed_list
+
+    def execute(self):
+
+        self._filter.SetInitialNeighborhoodRadius(self.radius)
+        self._filter.SetMultiplier(self.multiplier)
+        self._filter.SetNumberOfIterations(self.iterations)
+
+        self._filter.SetSeedList(self.seed_list)
+        self._filter.SetReplaceValue(1)
+
+        sitk_img = vtkImageToSITKImage(self._image)
+
+        sitk_img:sitk.Image = self._filter.Execute(sitk_img)
+
+        sitk_arr = sitk.GetArrayFromImage(sitk_img)
+
+        sitk_arr = sitk_arr.reshape(sitk_img.GetSize()[::-1])
+
+        self.segment.apply_mask_update(sitk_arr, self.operation)
+
+
+
       
+
+
+     
 
 
 

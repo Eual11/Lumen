@@ -12,6 +12,7 @@ import app.widgets.RCS_rc
 
 import sys
 from app.widgets.RegionGrowingDialog import create_region_grow_dialog
+from app.widgets.SmartRegionGrowingDialog import create_smart_region_grow_dialog
 from app.widgets.ThresholdDialog import ThresholdDialog, create_threshold_dialog
 from core.LumenCore import Lumen, RenderMethods
 from core.SegmentOperationCommand import RegionGrowCommand
@@ -21,6 +22,7 @@ class LumenMainWindow(QMainWindow):
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.setWindowTitle("Lumen")
 
         self.welcome_widget = WelcomeWidget()
 
@@ -149,12 +151,14 @@ class LumenMainWindow(QMainWindow):
         self.segment_operations.ui.paintBtn.clicked.connect(lambda: self.lumen_core.viewer.set_viewer_mode(ViewerMode.PAINT))
         self.segment_operations.ui.eraseBtn.clicked.connect(lambda: self.lumen_core.viewer.set_viewer_mode(ViewerMode.ERASE))
         self.segment_operations.ui.regionBtn.clicked.connect(lambda: create_region_grow_dialog(self.lumen_core))
+        self.segment_operations.ui.smartRegionBtn.clicked.connect(lambda:create_smart_region_grow_dialog(self.lumen_core))
+
 
 
 
         self.segments_table.set_selection_change_callback(self.segment_table_selection_change)
         self.segments_table.setMinimumHeight(320)
-        self.segment_operations.setMinimumHeight(180)
+        self.segment_operations.setMinimumHeight(220)
 
 
         num_samples = 1000
@@ -176,9 +180,10 @@ class LumenMainWindow(QMainWindow):
         self.ui.content.layout().addWidget(self.segment_operations)
         slider = QDoubleSpinBox()
         slider.setSingleStep(1)
+        slider.setValue(1)
         slider.valueChanged.connect(lambda x: self.lumen_core.set_isovalue(x))
 
-        layout.addWidget(QLabel("Segment Isoalue"))
+        layout.addWidget(QLabel("Segment Isovalue"))
         layout.addWidget(slider)
         layout.addWidget(hist)
 

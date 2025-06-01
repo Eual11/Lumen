@@ -81,4 +81,4 @@ def create_threshold_dialog(lumen_core:Lumen):
 
     dialog = ThresholdDialog(lumen_core)
 
-    dialog.show()
+    dialog.exec()

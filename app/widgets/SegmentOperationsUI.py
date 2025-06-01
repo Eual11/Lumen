@@ -23,9 +23,7 @@ class Ui_Form(object):
         if not Form.objectName():
             Form.setObjectName(u"Form")
         Form.resize(400, 300)
-        self.verticalLayout_2 = QVBoxLayout(Form)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.verticalLayout = QVBoxLayout()
+        self.verticalLayout = QVBoxLayout(Form)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName(u"gridLayout")
@@ -100,15 +98,25 @@ class Ui_Form(object):
 
         self.gridLayout.addWidget(self.regionBtn, 1, 1, 1, 2)
 
+        self.smartRegionBtn = QToolButton(Form)
+        self.smartRegionBtn.setObjectName(u"smartRegionBtn")
+        sizePolicy.setHeightForWidth(self.smartRegionBtn.sizePolicy().hasHeightForWidth())
+        self.smartRegionBtn.setSizePolicy(sizePolicy)
+        self.smartRegionBtn.setMinimumSize(QSize(32, 32))
+        icon6 = QIcon()
+        icon6.addFile(u":/segmen-operation/icons/grow_region_connected.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.smartRegionBtn.setIcon(icon6)
+        self.smartRegionBtn.setIconSize(QSize(28, 28))
+        self.smartRegionBtn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
 
-        self.verticalLayout.addLayout(self.gridLayout)
+        self.gridLayout.addWidget(self.smartRegionBtn, 2, 0, 1, 2)
 
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.verticalLayout.addItem(self.verticalSpacer)
+        self.gridLayout.addItem(self.verticalSpacer, 3, 0, 1, 1)
 
 
-        self.verticalLayout_2.addLayout(self.verticalLayout)
+        self.verticalLayout.addLayout(self.gridLayout)
 
 
         self.retranslateUi(Form)
@@ -124,5 +132,6 @@ class Ui_Form(object):
         self.thresholdBtn.setText(QCoreApplication.translate("Form", u"Threshold ", None))
         self.watershedBtn.setText(QCoreApplication.translate("Form", u"Watershed", None))
         self.regionBtn.setText(QCoreApplication.translate("Form", u"Region Growing", None))
+        self.smartRegionBtn.setText(QCoreApplication.translate("Form", u"Smart Region Growing", None))
     # retranslateUi
 

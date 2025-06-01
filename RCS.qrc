@@ -3,6 +3,7 @@
     <file>logo.jpg</file>
   </qresource>
   <qresource prefix="segmen-operation">
+    <file>icons/grow_region_connected.svg</file>
     <file>icons/gray_grid.svg</file>
     <file>icons/color_grid.svg</file>
     <file>icons/terahedron.svg</file>

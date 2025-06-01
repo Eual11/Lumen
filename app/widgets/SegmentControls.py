@@ -13,3 +13,5 @@ class SegmentControls(QWidget):
         self.remove_segment_btn = self.ui.removeSegmentBtn
         self.render_btn = self.ui.renderBtn
 
+        self.reconMethod = self.ui.reconMethod
+

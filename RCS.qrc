@@ -3,6 +3,10 @@
     <file>logo.jpg</file>
   </qresource>
   <qresource prefix="segmen-operation">
+    <file>icons/gray_grid.svg</file>
+    <file>icons/color_grid.svg</file>
+    <file>icons/terahedron.svg</file>
+    <file>icons/cubes.svg</file>
     <file>icons/erase.svg</file>
     <file>icons/grow_from_seed.svg</file>
     <file>icons/paint.svg</file>

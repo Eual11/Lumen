@@ -9,10 +9,11 @@ from app.WelcomeWidget import WelcomeWidget
 from app.widgets import SegmentControls, SegmentOperationsWidget, SegmentsTable
 from app.widgets.DicomViewer import ViewerMode
 import app.widgets.RCS_rc
+
 import sys
 from app.widgets.RegionGrowingDialog import create_region_grow_dialog
 from app.widgets.ThresholdDialog import ThresholdDialog, create_threshold_dialog
-from core.LumenCore import Lumen
+from core.LumenCore import Lumen, RenderMethods
 from core.SegmentOperationCommand import RegionGrowCommand
 class LumenMainWindow(QMainWindow):
     def __init__(self)->None:
@@ -77,6 +78,20 @@ class LumenMainWindow(QMainWindow):
         dir = QFileDialog.getExistingDirectory(None, "Load Dicom Image")
         self.lumen_core.load_image(dir)
         self.segments_table.update_model()
+
+    @QtCore.Slot()
+    def render(self):
+        method = self.segment_control.reconMethod.currentIndex()
+        if method == 0:
+            self.lumen_core.render_selected_segment(RenderMethods.MARCHING_CUBES)
+        elif method == 1:
+            self.lumen_core.render_selected_segment(RenderMethods.FLYING_EDGES)
+        elif method == 2:
+            self.lumen_core.render_selected_segment(RenderMethods.CPU_RAYCASTING)
+        elif method == 3:
+            self.lumen_core.render_selected_segment(RenderMethods.GPU_RAYCASTING)
+
+
 
     def closeEvent(self, event)->None:
         self.lumen_core.cleanup()
@@ -160,16 +175,17 @@ class LumenMainWindow(QMainWindow):
         self.ui.content.layout().addWidget(QLabel("Segment Operations"))
         self.ui.content.layout().addWidget(self.segment_operations)
         slider = QDoubleSpinBox()
-        slider.setRange(img_min, img_max)
         slider.setSingleStep(1)
+        slider.valueChanged.connect(lambda x: self.lumen_core.set_isovalue(x))
 
-        layout.addWidget(hist)
         layout.addWidget(QLabel("Segment Isoalue"))
         layout.addWidget(slider)
+        layout.addWidget(hist)
+
         self.segment_control.add_segment_btn.clicked.connect(self.addSegment)
         self.segment_control.remove_segment_btn.clicked.connect(self.removeSegment)
 
-        self.segment_control.render_btn.clicked.connect(lambda:self.lumen_core.render_selected_segment())
+        self.segment_control.render_btn.clicked.connect(self.render)
     def load_welcome_widget(self):
         self.clear_layout(self.ui.content.layout())
 

@@ -1,3 +1,5 @@
+from typing import Optional, Union
+
 from typing import List, Optional,Tuple
 from enum import Enum
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QMessageBox
@@ -102,36 +104,51 @@ class DicomViewer(QWidget):
             self.update_text_actor(0,0,"")
             self.renderImage()
 
-    def cleanup(self):
-        self.vtkInteractor.GetRenderWindow().Finalize()
 
-    def updateSource(self, source: Optional[vtk.vtkAlgorithmOutput]):
-        self.source = source
-        if source:
-            self.mapper.SetInputConnection(source)
-            source.GetProducer().Update()
-            self.image_data = source.GetProducer().GetOutput()
+    def updateSource(self, source: Optional[Union[vtk.vtkAlgorithmOutput, vtk.vtkAlgorithm]]):
+        self.source = None  # Reset source
+        output_port = None
 
-            self.spacing = self.image_data.GetSpacing()
-            self.origin = self.image_data.GetOrigin()
-            self.extent = self.image_data.GetExtent()
-
-            zmin, zmax = self.extent[4], self.extent[5]
-
-
-            self.ui.sliceSlider.setMinimum(zmin)
-            self.ui.sliceSlider.setMaximum(zmax)
-            self.ui.sliceSlider.setValue(zmin)
-            self.setSliceIdx(zmin)
-
-            self.renderer.ResetCamera()
-            self.renderImage()
+        if isinstance(source, vtk.vtkAlgorithmOutput):
+            output_port = source
+            self.source = output_port
+        elif isinstance(source, vtk.vtkAlgorithm):
+            output_port = source.GetOutputPort()
+            self.source = output_port
         else:
             self.mapper.SetInputConnection(None)
+            self.clear_renderer()
+            self.renderer.Clear()
+            self.setup_text_actor()
+            return
+
+        self.mapper.SetInputConnection(output_port)
+        producer = output_port.GetProducer()
+        producer.Update()
+
+        self.image_data:vtk.vtkImageData = producer.GetOutput()
+        self.spacing = self.image_data.GetSpacing()
+        self.origin = self.image_data.GetOrigin()
+        self.extent = self.image_data.GetExtent()
+
+        zmin, zmax = self.extent[4], self.extent[5]
+        self.ui.sliceSlider.setMinimum(zmin)
+        self.ui.sliceSlider.setMaximum(zmax)
+        self.ui.sliceSlider.setValue(zmin)
+        self.setSliceIdx(zmin)
+
+        self.renderer.ResetCamera()
+        self.renderImage()
+
         self.seed_placement_command = None
         self.clear_renderer()
         self.renderer.Clear()
         self.setup_text_actor()
+
+
+    def cleanup(self):
+        self.vtkInteractor.GetRenderWindow().Finalize()
+
     def add_segment_overlay(self,segment:Segment):
         mapper = vtk.vtkImageResliceMapper()
         img_data = numpyArrToVtkImageData(segment.mask, self.spacing, vtk.VTK_CHAR)

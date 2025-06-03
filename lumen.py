@@ -8,7 +8,10 @@ from app.LumenMainWindow2 import Ui_MainWindow
 from app.WelcomeWidget import WelcomeWidget
 from app.widgets import SegmentControls, SegmentOperationsWidget, SegmentsTable
 from app.widgets.DicomLoadDialog import create_load_dicom_dialog
+from app.widgets.EraseSettingsDialog import create_erase_settings_dialog
+from app.widgets.FillHolesDialog import create_fill_holes_dialog
 from app.widgets.DicomViewer import ViewerMode
+from app.widgets.PaintSettingsDialog import create_paint_settings_dialog
 import app.widgets.RCS_rc
 
 import sys
@@ -45,8 +48,8 @@ class LumenMainWindow(QMainWindow):
         self.ui.viewPrimary.setLayout(l1)
         self.ui.viewSecondary1.setLayout(l2)
 
-        self.ui.btnLoad.clicked.connect(lambda : create_load_dicom_dialog(self.lumen_core, self.segments_table))
         self.ui.btnResetRenderer.clicked.connect(self.resetRenderer)
+        self.ui.btnLoad.clicked.connect(lambda : create_load_dicom_dialog(self.lumen_core, self.segments_table))
 
         self.segments_table = SegmentsTable.SegementsTableWidget(self.lumen_core.segments,self.lumen_core)
 
@@ -143,9 +146,10 @@ class LumenMainWindow(QMainWindow):
 
         # Segment Operations
         self.segment_operations.ui.thresholdBtn.clicked.connect(lambda:create_threshold_dialog(self.lumen_core))
-        self.segment_operations.ui.paintBtn.clicked.connect(lambda: self.lumen_core.viewer.set_viewer_mode(ViewerMode.PAINT))
-        self.segment_operations.ui.eraseBtn.clicked.connect(lambda: self.lumen_core.viewer.set_viewer_mode(ViewerMode.ERASE))
+        self.segment_operations.ui.paintBtn.clicked.connect(lambda: create_paint_settings_dialog(self.lumen_core))
+        self.segment_operations.ui.eraseBtn.clicked.connect(lambda: create_erase_settings_dialog(self.lumen_core))
         self.segment_operations.ui.regionBtn.clicked.connect(lambda: create_region_grow_dialog(self.lumen_core))
+        self.segment_operations.ui.fillHoles.clicked.connect(lambda: create_fill_holes_dialog(self.lumen_core))
         self.segment_operations.ui.smartRegionBtn.clicked.connect(lambda:create_smart_region_grow_dialog(self.lumen_core))
 
 

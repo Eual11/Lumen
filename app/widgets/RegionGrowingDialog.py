@@ -64,6 +64,7 @@ class RegionGrowingDialog(QDialog):
         min_thres, max_thres = self.get_thresholds()
         segment = self.lumen_core.get_selected_segment()
         if segment:
+            self.lumen_core.viewer.set_viewer_mode(ViewerMode.SEED_PLACEMENT)
             cmd = RegionGrowCommand(self.lumen_core.get_pipeline_output_data(), segment, 0,10000,[],"add")
             cmd.lower_bound = min_thres
             cmd.upper_bound = max_thres
@@ -77,7 +78,6 @@ class RegionGrowingDialog(QDialog):
         return super().reject()
 def create_region_grow_dialog(lumen_core:Lumen):
     selected_segment = lumen_core.get_selected_segment()
-    lumen_core.viewer.set_viewer_mode(ViewerMode.SEED_PLACEMENT)
 
     if not selected_segment:
         return

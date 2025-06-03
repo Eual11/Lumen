@@ -71,16 +71,16 @@ class Ui_Form(object):
 
         self.gridLayout.addWidget(self.thresholdBtn, 0, 3, 1, 1)
 
-        self.watershedBtn = QToolButton(Form)
-        self.watershedBtn.setObjectName(u"watershedBtn")
-        self.watershedBtn.setMinimumSize(QSize(64, 32))
+        self.fillHoles = QToolButton(Form)
+        self.fillHoles.setObjectName(u"fillHoles")
+        self.fillHoles.setMinimumSize(QSize(64, 32))
         icon4 = QIcon()
         icon4.addFile(u":/segmen-operation/icons/watershed.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.watershedBtn.setIcon(icon4)
-        self.watershedBtn.setIconSize(QSize(28, 28))
-        self.watershedBtn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+        self.fillHoles.setIcon(icon4)
+        self.fillHoles.setIconSize(QSize(28, 28))
+        self.fillHoles.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
 
-        self.gridLayout.addWidget(self.watershedBtn, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.fillHoles, 1, 0, 1, 1)
 
         self.regionBtn = QToolButton(Form)
         self.regionBtn.setObjectName(u"regionBtn")
@@ -130,7 +130,7 @@ class Ui_Form(object):
         self.paintBtn.setText(QCoreApplication.translate("Form", u"Paint", None))
         self.eraseBtn.setText(QCoreApplication.translate("Form", u"Erase", None))
         self.thresholdBtn.setText(QCoreApplication.translate("Form", u"Threshold ", None))
-        self.watershedBtn.setText(QCoreApplication.translate("Form", u"Watershed", None))
+        self.fillHoles.setText(QCoreApplication.translate("Form", u"Fill Holes", None))
         self.regionBtn.setText(QCoreApplication.translate("Form", u"Region Growing", None))
         self.smartRegionBtn.setText(QCoreApplication.translate("Form", u"Smart Region Growing", None))
     # retranslateUi

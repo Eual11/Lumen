@@ -12,7 +12,7 @@ class SegmentOperationsWidget(QWidget):
         self.selectBtn = self.ui.selectBtn
         self.paintBtn = self.ui.paintBtn
         self.eraseBtn = self.ui.eraseBtn
-        self.watershedBtn = self.ui.watershedBtn
+        self.fillHolesBtn = self.ui.fillHoles
         self.regionBtn = self.ui.regionBtn
         self.smartRegionBtn = self.ui.smartRegionBtn
 

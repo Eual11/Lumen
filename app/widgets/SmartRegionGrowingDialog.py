@@ -78,6 +78,7 @@ class SmartRegionGrowingDialog(QDialog):
         multiplier, iterations, radius = self.get_parameters()
         segment = self.lumen_core.get_selected_segment()
         if segment:
+            self.lumen_core.viewer.set_viewer_mode(ViewerMode.SEED_PLACEMENT)
             cmd = ConnectedRegionGrowCommand(
                 self.lumen_core.get_pipeline_output_data(),
                 segment,
@@ -98,7 +99,6 @@ class SmartRegionGrowingDialog(QDialog):
 
 def create_smart_region_grow_dialog(lumen_core: Lumen):
     selected_segment = lumen_core.get_selected_segment()
-    lumen_core.viewer.set_viewer_mode(ViewerMode.SEED_PLACEMENT)
 
     if not selected_segment:
         return

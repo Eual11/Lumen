@@ -148,12 +148,40 @@ class ConnectedRegionGrowCommand(SegmentOperationCommand):
 
         self.segment.apply_mask_update(sitk_arr, self.operation)
 
+class FillHolesCommand(SegmentOperationCommand):
+    radius:int
+
+    operation:str
+
+    def __init__(self, image:vtkImageData, segment:Segment, radius:int , op = "add"):
+        
+        super().__init__(segment)
+
+        self.radius = radius 
+
+        self.operation = op
+
+        self._filter = sitk.BinaryMorphologicalClosingImageFilter()
+
+        self._image = image
+
+    def execute(self):
+
+        sitk_img = vtkImageToSITKImage(self._image)
+
+        vector_radius = (self.radius,self.radius,self.radius)
+        self._filter.SetKernelRadius(vector_radius)
+        self._filter.SetKernelType(sitk.sitkBall)
+
+        sitk_img:sitk.Image = self._filter.Execute(sitk_img)
 
 
-      
+        sitk_arr = sitk.GetArrayFromImage(sitk_img)
 
+        sitk_arr = sitk_arr.reshape(sitk_img.GetSize()[::-1])
 
-     
+        self.segment.apply_mask_update(sitk_arr, self.operation)
+
 
 
 

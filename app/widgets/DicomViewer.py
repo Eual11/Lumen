@@ -74,6 +74,11 @@ class DicomViewer(QWidget):
         self.seed_placement_command: Optional[RegionGrowCommand|ConnectedRegionGrowCommand] = None
 
         self.is_painting = False
+        self.painter_radius = 5
+        self.painter_depth = 1
+
+        self.eraser_radius = 5
+        self.eraser_depth = 1
 
         self.text_actor:Optional[vtk.vtkTextActor] = None
         self.image_data:Optional[vtk.vtkImageData] = None
@@ -276,9 +281,9 @@ class DicomViewer(QWidget):
 
         # TODO: add bruh and eraser radius
         if self.viewer_mode == ViewerMode.PAINT and self.is_painting :
-            self.paint_segment(x,y,z,10)
+            self.paint_segment(x,y,z,self.painter_radius)
         if self.viewer_mode == ViewerMode.ERASE and self.is_painting :
-            self.erase_segment(x,y,z,10)
+            self.erase_segment(x,y,z,self.eraser_radius)
 
 
 
@@ -310,7 +315,7 @@ class DicomViewer(QWidget):
         shape = mask.shape
         z,y,x = numpy.ogrid[:shape[0], :shape[1], :shape[2]]
 
-        dist_sq =((x-x0)**2 + (y-y0)**2 <=r**2) & (z == self.slice_index) 
+        dist_sq =((x-x0)**2 + (y-y0)**2 <=r**2) & ((z>=self.slice_index) & (z < self.painter_depth+self.slice_index)) 
 
         mask[dist_sq] = 1
 
@@ -323,7 +328,7 @@ class DicomViewer(QWidget):
         shape = mask.shape
         z,y,x = numpy.ogrid[:shape[0], :shape[1], :shape[2]]
 
-        dist_sq =((x-x0)**2 + (y-y0)**2<=r**2) &(z == self.slice_index) 
+        dist_sq =((x-x0)**2 + (y-y0)**2<=r**2) & ((z >= self.slice_index) & (z < self.slice_index + self.eraser_depth)) 
 
         mask[dist_sq] = 0
 

@@ -1,8 +1,38 @@
 <RCC>
   <qresource prefix="core">
+    <file>icons/color_grid.svg</file>
+    <file>icons/cubes.svg</file>
+    <file>icons/erase.svg</file>
+    <file>icons/gray_grid.svg</file>
+    <file>icons/grow_from_seed.svg</file>
+    <file>icons/grow_region_connected.svg</file>
+    <file>icons/paint.svg</file>
+    <file>icons/select.svg</file>
+    <file>icons/terahedron.svg</file>
+    <file>icons/threshold.svg</file>
+    <file>icons/watershed.svg</file>
+    <file>icons/segmenation_module.svg</file>
+    <file>icons/volune.svg</file>
+    <file>icons/3d_glasses.svg</file>
+    <file>icons/gear_color.svg</file>
     <file>logo.jpg</file>
   </qresource>
   <qresource prefix="segmen-operation">
+    <file>icons/color_grid.svg</file>
+    <file>icons/cubes.svg</file>
+    <file>icons/erase.svg</file>
+    <file>icons/gray_grid.svg</file>
+    <file>icons/grow_from_seed.svg</file>
+    <file>icons/grow_region_connected.svg</file>
+    <file>icons/paint.svg</file>
+    <file>icons/select.svg</file>
+    <file>icons/terahedron.svg</file>
+    <file>icons/threshold.svg</file>
+    <file>icons/watershed.svg</file>
+    <file>icons/segmenation_module.svg</file>
+    <file>icons/volune.svg</file>
+    <file>icons/3d_glasses.svg</file>
+    <file>icons/gear_color.svg</file>
     <file>icons/grow_region_connected.svg</file>
     <file>icons/gray_grid.svg</file>
     <file>icons/color_grid.svg</file>

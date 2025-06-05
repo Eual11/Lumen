@@ -142,8 +142,8 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>120</width>
-          <height>0</height>
+          <width>216</width>
+          <height>32</height>
          </size>
         </property>
         <property name="sizeAdjustPolicy">
@@ -154,28 +154,35 @@
           <string>Welcome to Lumen!</string>
          </property>
          <property name="icon">
-          <iconset theme="QIcon::ThemeIcon::AppointmentNew"/>
+          <iconset resource="../RCS.qrc">
+           <normaloff>:/segmen-operation/icons/gear_color.svg</normaloff>:/segmen-operation/icons/gear_color.svg</iconset>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Segementation</string>
+          <string>Segementation Module</string>
          </property>
          <property name="icon">
-          <iconset theme="QIcon::ThemeIcon::AddressBookNew"/>
+          <iconset resource="../RCS.qrc">
+           <normaloff>:/core/icons/segmenation_module.svg</normaloff>:/core/icons/segmenation_module.svg</iconset>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Volume Rendering</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Surface Extraction</string>
+          <string>Surface Extraction Module</string>
          </property>
          <property name="icon">
-          <iconset theme="QIcon::ThemeIcon::AppointmentNew"/>
+          <iconset resource="../RCS.qrc">
+           <normaloff>:/core/icons/3d_glasses.svg</normaloff>:/core/icons/3d_glasses.svg</iconset>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Volume Rendering Module</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../RCS.qrc">
+           <normaloff>:/core/icons/volune.svg</normaloff>:/core/icons/volune.svg</iconset>
          </property>
         </item>
        </widget>

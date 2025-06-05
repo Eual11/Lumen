@@ -1,4 +1,6 @@
 from enum import Enum
+from os import P_NOWAIT
+import numpy as np
 from random import randrange
 from typing import List, Optional, Tuple
 import time
@@ -11,7 +13,7 @@ from app.widgets.Renderer import Renderer
 from core import DicomLoader, DymanicPipeline
 
 from core.SegmentOperationCommand import ThresholdCommand
-from vtk import vtkActor, vtkAlgorithm, vtkColorTransferFunction, vtkCubeSource, vtkFixedPointVolumeRayCastMapper, vtkFlyingEdges3D, vtkGPUVolumeRayCastMapper, vtkImageData, vtkImageFlip, vtkImageGaussianSmooth, vtkImageMedian3D, vtkImageSobel3D, vtkImageThreshold, vtkMarchingCubes, vtkOutputWindow, vtkPiecewiseFunction, vtkPolyDataMapper, vtkVolume, vtkVolumeProperty,VTK_INT
+from vtk import vtkActor, vtkAlgorithm, vtkBox, vtkBoxWidget, vtkColorTransferFunction, vtkCommand, vtkCubeSource, vtkDoubleArray, vtkFixedPointVolumeRayCastMapper, vtkFlyingEdges3D, vtkGPUVolumeRayCastMapper, vtkImageData, vtkImageFlip, vtkImageGaussianSmooth, vtkImageMedian3D, vtkImageSobel3D, vtkImageThreshold, vtkMapper, vtkMarchingCubes, vtkMatrix4x4, vtkOutputWindow, vtkPiecewiseFunction, vtkPlanes, vtkPolyDataMapper, vtkTransform, vtkVolume, vtkVolumeProperty,VTK_INT
 
 from core.Segment import Segment
 from utils.utils import save_numpy_arr_as_png, save_sitk_image, vtkImageToNumpyArr, vtkarrayToVtkImageData
@@ -42,6 +44,7 @@ class Lumen:
 
         self.selected_segment =-1
         self.segment_name_idx =1
+        self.box_widget = vtkBoxWidget()
         #Used for rendering
         self.surface_iso_value = 100
 
@@ -212,7 +215,15 @@ class Lumen:
         actor.SetMapper(mapper)
         actor.GetProperty().SetColor(*[c/255.0 for c in color[0:3]])
 
-        self.renderer.addActor(actor)
+        box_widget = vtkBoxWidget() 
+        box_widget.SetInteractor(self.renderer.interactor)
+        box_widget.SetPlaceFactor(1.0)
+        box_widget.SetProp3D(actor)
+        box_widget.PlaceWidget()
+        box_widget.Off()
+        box_widget.AddObserver(vtkCommand.InteractionEvent, self.boxCallback)
+
+        self.renderer.addActor(actor, box_widget)
     def add_filter(self, filter:vtkAlgorithm, index = None):
         if self.image_pipeline:
             self.image_pipeline.add_filter(filter, index)
@@ -262,7 +273,17 @@ class Lumen:
         volume.SetProperty(volume_property)
         volume.SetMapper(mapper)
 
-        self.renderer.addVolume(volume)
+        box_widget = vtkBoxWidget() 
+        box_widget.SetInteractor(self.renderer.interactor)
+        box_widget.SetPlaceFactor(1.0)
+        box_widget.SetProp3D(volume)
+        box_widget.PlaceWidget()
+        box_widget.On()
+
+        box_widget.AddObserver(vtkCommand.InteractionEvent, self.boxVolumeCallback)
+
+
+        self.renderer.addVolume(volume, box_widget)
     def save_mesh_as(self, filename:str, format:ExportFormat = ExportFormat.OBJ):
         if(format == ExportFormat.OBJ):
             self.renderer.writeObj(filename)
@@ -294,6 +315,90 @@ class Lumen:
 
         return histogram_arr
 
+    def flip_clipping_planes(self,planes: vtkPlanes) -> vtkPlanes:
+        flipped_planes = vtkPlanes()
+        flipped_normals = vtkDoubleArray()
+        flipped_normals.SetNumberOfComponents(3)
+        flipped_normals.SetNumberOfTuples(planes.GetNormals().GetNumberOfTuples())
+
+        for i in range(planes.GetNormals().GetNumberOfTuples()):
+            n = planes.GetNormals().GetTuple3(i)
+            flipped_normals.SetTuple3(i, -n[0], -n[1], -n[2])
+
+        flipped_planes.SetNormals(flipped_normals)
+        flipped_planes.SetPoints(planes.GetPoints())  # origin stays the same
+        return flipped_planes
+    def boxVolumeCallback(self,obj: vtkBoxWidget, event):
+
+        full_transform = vtkTransform()
+        obj.GetTransform(full_transform)
+        prop:vtkActor = obj.GetProp3D()
+        mapper:vtkMapper = prop.GetMapper()
+
+        mat = full_transform.GetMatrix()
 
 
+        mat_np = np.array([[mat.GetElement(i, j) for j in range(4)] for i in range(4)])
+
+        translation = mat_np[:3, 3]
+
+        # Remove scale: normalize each column of the upper 3x3 matrix (rotation + scale)
+        rot_scale = mat_np[:3, :3]
+        scale_factors = np.linalg.norm(rot_scale, axis=0)
+        rotation_matrix = rot_scale / scale_factors  # Now it's pure rotation
+
+        # Create a new vtkTransform with just rotation and translation
+        clean_matrix = vtkMatrix4x4()
+        for i in range(3):
+            for j in range(3):
+                clean_matrix.SetElement(i, j, rotation_matrix[i, j])
+            clean_matrix.SetElement(i, 3, translation[i])
+        clean_matrix.SetElement(3, 0, 0)
+        clean_matrix.SetElement(3, 1, 0)
+        clean_matrix.SetElement(3, 2, 0)
+        clean_matrix.SetElement(3, 3, 1)
+
+        cleaned_transform = vtkTransform()
+        cleaned_transform.SetMatrix(clean_matrix)
+
+        obj.GetProp3D().SetUserTransform(cleaned_transform)
+
+
+    def boxCallback(self, obj: vtkBoxWidget, event):
+        # Get the full transform (may contain scale)
+        full_transform = vtkTransform()
+        obj.GetTransform(full_transform)
+        prop:vtkActor = obj.GetProp3D()
+        mapper:vtkMapper = prop.GetMapper()
+        # Get the 4x4 matrix
+
+        mat = full_transform.GetMatrix()
+
+        # Convert to numpy to extract rotation and translation cleanly
+
+        mat_np = np.array([[mat.GetElement(i, j) for j in range(4)] for i in range(4)])
+
+        # Extract translation
+        translation = mat_np[:3, 3]
+
+        # Remove scale: normalize each column of the upper 3x3 matrix (rotation + scale)
+        rot_scale = mat_np[:3, :3]
+        scale_factors = np.linalg.norm(rot_scale, axis=0)
+        rotation_matrix = rot_scale / scale_factors  # Now it's pure rotation
+
+        # Create a new vtkTransform with just rotation and translation
+        clean_matrix = vtkMatrix4x4()
+        for i in range(3):
+            for j in range(3):
+                clean_matrix.SetElement(i, j, rotation_matrix[i, j])
+            clean_matrix.SetElement(i, 3, translation[i])
+        clean_matrix.SetElement(3, 0, 0)
+        clean_matrix.SetElement(3, 1, 0)
+        clean_matrix.SetElement(3, 2, 0)
+        clean_matrix.SetElement(3, 3, 1)
+
+        cleaned_transform = vtkTransform()
+        cleaned_transform.SetMatrix(clean_matrix)
+
+        obj.GetProp3D().SetUserTransform(full_transform)
 

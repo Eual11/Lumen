@@ -7,6 +7,7 @@ from app.HistogramWidget import HistogramWidget
 from app.LumenMainWindow2 import Ui_MainWindow
 from app.WelcomeWidget import WelcomeWidget
 from app.widgets import SegmentControls, SegmentOperationsWidget, SegmentsTable
+from app.widgets.ActorsTableWidget import ActorsTableWidget
 from app.widgets.DicomLoadDialog import create_load_dicom_dialog
 from app.widgets.EraseSettingsDialog import create_erase_settings_dialog
 from app.widgets.FillHolesDialog import create_fill_holes_dialog
@@ -53,6 +54,8 @@ class LumenMainWindow(QMainWindow):
 
         self.segments_table = SegmentsTable.SegementsTableWidget(self.lumen_core.segments,self.lumen_core)
 
+        self.actors_table = ActorsTableWidget(self.lumen_core)
+
         # Dialogs 
 
         self.threshold_dialog = ThresholdDialog(None)
@@ -79,6 +82,7 @@ class LumenMainWindow(QMainWindow):
     @QtCore.Slot()
     def resetRenderer(self):
         self.lumen_core.reset_renderer()
+        self.actors_table.update_model()
     @QtCore.Slot()
     def render(self):
         method = self.segment_control.reconMethod.currentIndex()
@@ -90,6 +94,7 @@ class LumenMainWindow(QMainWindow):
             self.lumen_core.render_selected_segment(RenderMethods.CPU_RAYCASTING)
         elif method == 3:
             self.lumen_core.render_selected_segment(RenderMethods.GPU_RAYCASTING)
+        self.actors_table.update_model()
 
 
 
@@ -159,6 +164,10 @@ class LumenMainWindow(QMainWindow):
         self.segments_table.setMinimumHeight(320)
         self.segment_operations.setMinimumHeight(220)
 
+        self.actors_table.setMinimumHeight(320)
+
+
+
 
         num_samples = 1000
         img_min,img_max = self.lumen_core.get_image_range()
@@ -212,6 +221,9 @@ class LumenMainWindow(QMainWindow):
         self.clear_layout(self.ui.content.layout())
 
         layout = self.ui.content.layout()
+        if layout:
+            layout.addWidget(QLabel("Actors"))
+            layout.addWidget(self.actors_table)
 
         
        

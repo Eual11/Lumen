@@ -169,6 +169,8 @@ class ActorsTableWidget(QWidget):
                 row = indexes[0].row()
                 actor, info = self.model._data[row]
                 self.selection_callback(actor, info)
+            else:
+                self.selection_callback(None, None)
 
     def set_selection_change_callback(self, callback):
         self.selection_callback = callback

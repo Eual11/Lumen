@@ -1,4 +1,4 @@
-from typing import List, TypedDict
+from typing import List, Optional, TypedDict
 from PySide6.QtWidgets import QVBoxLayout, QWidget
 
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -38,7 +38,7 @@ class Renderer(QWidget):
         self.interactor = self.vtkWindow.GetInteractor()
 
         self.actors: dict[vtk.vtkActor, ActorInfo] = {}
-        self.selected_actor = -1
+        self.selected_actor: Optional[vtk.vtkActor] = None
 
 
         self.volumes: dict[vtk.vtkVolume, ActorInfo] = {}
@@ -111,8 +111,26 @@ class Renderer(QWidget):
         
     
 
-    def set_selected_actor(self, idx:int):
-        self.selected_actor = idx
+    def set_selected_actor(self,actor:vtk.vtkActor):
+        if actor and actor in self.actors:
+            self.selected_actor = actor
+        else:
+            self.selected_actor = None
+    def remove_selected_actor(self):
+        self.remove_actor(self.selected_actor)
+        self.selected_actor = None
+    def remove_actor(self, actor):
+        if actor and actor in self.actors:
+            self.renderer.RemoveActor(actor)
+            info = self.actors[actor]
+            widget = info.get('box_widget')
+            if widget:
+                widget.SetEnabled(False)
+                if widget.HasObserver(vtk.vtkCommand.InteractionEvent):
+                    widget.RemoveAllObservers()
+                widget.SetInteractor(None)
+            self.actors.pop(actor)
+
 
     
     def reset(self):

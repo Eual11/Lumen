@@ -7,6 +7,7 @@ from app.HistogramWidget import HistogramWidget
 from app.LumenMainWindow2 import Ui_MainWindow
 from app.WelcomeWidget import WelcomeWidget
 from app.widgets import SegmentControls, SegmentOperationsWidget, SegmentsTable
+from app.widgets.ActorControlWidget import ActorControls
 from app.widgets.ActorsTableWidget import ActorsTableWidget
 from app.widgets.DicomLoadDialog import create_load_dicom_dialog
 from app.widgets.EraseSettingsDialog import create_erase_settings_dialog
@@ -101,12 +102,18 @@ class LumenMainWindow(QMainWindow):
     def closeEvent(self, event)->None:
         self.lumen_core.cleanup()
         return super().closeEvent(event)
+    @QtCore.Slot()
     def addSegment(self):
         self.lumen_core.create_segement(color=(255,1,1))
         self.segments_table.update_model()
+    @QtCore.Slot()
     def removeSegment(self):
        self.lumen_core.delete_selected_segment()
        self.segments_table.update_model()
+    @QtCore.Slot()
+    def removeActor(self):
+        self.lumen_core.renderer.remove_selected_actor()
+        self.actors_table.update_model()
     @QtCore.Slot()
     def segment_table_selection_change(self, selected:QtCore.QItemSelection, deselected:QtCore.QItemSelection):
         if not len(selected.indexes()):
@@ -114,6 +121,11 @@ class LumenMainWindow(QMainWindow):
         else:
             row = selected.indexes()[0].row()
             self.lumen_core.set_selected_segment(row)
+
+    @QtCore.Slot()
+    def actors_table_selection_change(self, actor,info):
+        self.lumen_core.renderer.set_selected_actor(actor)
+
     def disconnect_signals(self, widget:QWidget):
         for sig in getattr(widget, "_connected_signals",[]):
             try:
@@ -161,6 +173,7 @@ class LumenMainWindow(QMainWindow):
 
 
         self.segments_table.set_selection_change_callback(self.segment_table_selection_change)
+        self.actors_table.set_selection_change_callback(self.actors_table_selection_change)
         self.segments_table.setMinimumHeight(320)
         self.segment_operations.setMinimumHeight(220)
 
@@ -220,16 +233,17 @@ class LumenMainWindow(QMainWindow):
     def load_surface_recon_module(self):
         self.clear_layout(self.ui.content.layout())
 
+        self.actor_control = ActorControls()
+        self.actor_control.setMaximumHeight(64)
+
         layout = self.ui.content.layout()
         if layout:
+            # Connecting Signals
+            self.actor_control.remove_actor_btn.clicked.connect(self.removeActor)
+
+            layout.addWidget(self.actor_control)
             layout.addWidget(QLabel("Actors"))
             layout.addWidget(self.actors_table)
-
-        
-       
-        
-        
-
 
 
 

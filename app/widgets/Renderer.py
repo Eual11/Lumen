@@ -130,6 +130,32 @@ class Renderer(QWidget):
                     widget.RemoveAllObservers()
                 widget.SetInteractor(None)
             self.actors.pop(actor)
+    def set_selected_actor_shading(self,idx):
+        if self.selected_actor:
+            prop = self.selected_actor.GetProperty()
+            if idx == 0:
+                prop.SetInterpolationToPhong()
+            elif idx == 1:
+                prop.SetInterpolationToPhong()
+            elif idx == 2:
+                prop.SetInterpolationToFlat()
+            elif idx == 3:
+                prop.SetInterpolationToGouraud()
+            elif idx == 4 and hasattr(prop, 'SetInterpolationToPBR'):
+                prop.SetInterpolationToPBR()
+            self.vtkWindow.Render()
+
+    def set_selected_actor_display(self, idx):
+        if self.selected_actor:
+            prop = self.selected_actor.GetProperty()
+            if idx == 0:
+                prop.SetRepresentationToSurface()
+            elif idx == 1:
+                prop.SetRepresentationToPoints()
+            elif idx == 2:
+                prop.SetRepresentationToWireframe()
+            self.vtkWindow.Render()
+
 
 
     

@@ -12,7 +12,7 @@ class ActorTableModel(QAbstractTableModel):
         self._data = list(self.actor_dict.items())  # list of (vtkActor, ActorInfo)
 
         self.headers = ["Name", "Transform", "Visibility"]
-        self.transform_icon = QIcon(":/segment_table/transform.png")
+        self.transform_icon = QIcon(":/core/icons/link_on")
         self.visibility_icon = QIcon(":/segment_table/eye.png")
 
     def rowCount(self, parent=QModelIndex()):
@@ -59,7 +59,7 @@ class ActorTableModel(QAbstractTableModel):
 
     def headerData(self, section, orientation, role):
         if orientation == Qt.Horizontal:
-            if role == Qt.DisplayRole:
+            if role == Qt.DisplayRole and section ==0:
                 return self.headers[section]
             elif role == Qt.DecorationRole:
                 if section == 1:
@@ -130,8 +130,8 @@ class ActorsTableWidget(QWidget):
         """)
 
         # Delegates
-        transform_on_icon = QIcon(":/segment_table/eye.png")
-        transform_off_icon = QIcon(":/segment_table/hidden.png")
+        transform_on_icon = QIcon(":/core/icons/link_on.svg")
+        transform_off_icon = QIcon(":/core/icons/link_off.svg")
 
         visibility_on_icon = QIcon(":/segment_table/eye.png")
         visibility_off_icon = QIcon(":/segment_table/hidden.png")

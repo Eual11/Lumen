@@ -15,6 +15,8 @@
     <file>icons/volune.svg</file>
     <file>icons/3d_glasses.svg</file>
     <file>icons/gear_color.svg</file>
+    <file>icons/link_off.svg</file>
+    <file>icons/link_on.svg</file>
     <file>logo.jpg</file>
   </qresource>
   <qresource prefix="segmen-operation">

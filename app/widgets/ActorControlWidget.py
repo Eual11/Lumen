@@ -13,4 +13,7 @@ class ActorControls(QWidget):
         self.remove_actor_btn = self.ui.removeActorBtn
         self.export_btn = self.ui.exportActorBtn
 
+        self.surface_combo_box = self.ui.surfaceComboBox
+        self.shading_combo_box = self.ui.shadingComboBox
+
 

@@ -234,12 +234,14 @@ class LumenMainWindow(QMainWindow):
         self.clear_layout(self.ui.content.layout())
 
         self.actor_control = ActorControls()
-        self.actor_control.setMaximumHeight(64)
+        self.actor_control.setMaximumHeight(128)
 
         layout = self.ui.content.layout()
         if layout:
             # Connecting Signals
             self.actor_control.remove_actor_btn.clicked.connect(self.removeActor)
+            self.actor_control.surface_combo_box.currentIndexChanged.connect(self.lumen_core.renderer.set_selected_actor_display)
+            self.actor_control.shading_combo_box.currentIndexChanged.connect(self.lumen_core.renderer.set_selected_actor_shading)
 
             layout.addWidget(self.actor_control)
             layout.addWidget(QLabel("Actors"))

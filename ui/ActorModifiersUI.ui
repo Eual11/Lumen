@@ -125,7 +125,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="butterflySubDivBtn">
+      <widget class="QToolButton" name="fillHolesBtn">
        <property name="minimumSize">
         <size>
          <width>129</width>
@@ -133,11 +133,11 @@
         </size>
        </property>
        <property name="text">
-        <string>Butterfly Subdivision</string>
+        <string>Fill Holes</string>
        </property>
        <property name="icon">
         <iconset resource="../RCS.qrc">
-         <normaloff>:/core/icons/butter_fly.svg</normaloff>:/core/icons/butter_fly.svg</iconset>
+         <normaloff>:/core/icons/meshHole.svg</normaloff>:/core/icons/meshHole.svg</iconset>
        </property>
        <property name="iconSize">
         <size>

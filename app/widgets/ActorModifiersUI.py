@@ -76,16 +76,16 @@ class Ui_Form(object):
 
         self.horizontalLayout_2.addWidget(self.linearSubDivBtn)
 
-        self.butterflySubDivBtn = QToolButton(Form)
-        self.butterflySubDivBtn.setObjectName(u"butterflySubDivBtn")
-        self.butterflySubDivBtn.setMinimumSize(QSize(129, 64))
+        self.fillHolesBtn = QToolButton(Form)
+        self.fillHolesBtn.setObjectName(u"fillHolesBtn")
+        self.fillHolesBtn.setMinimumSize(QSize(129, 64))
         icon4 = QIcon()
-        icon4.addFile(u":/core/icons/butter_fly.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.butterflySubDivBtn.setIcon(icon4)
-        self.butterflySubDivBtn.setIconSize(QSize(28, 28))
-        self.butterflySubDivBtn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+        icon4.addFile(u":/core/icons/meshHole.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.fillHolesBtn.setIcon(icon4)
+        self.fillHolesBtn.setIconSize(QSize(28, 28))
+        self.fillHolesBtn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
 
-        self.horizontalLayout_2.addWidget(self.butterflySubDivBtn)
+        self.horizontalLayout_2.addWidget(self.fillHolesBtn)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
@@ -106,6 +106,6 @@ class Ui_Form(object):
         self.clip.setText(QCoreApplication.translate("Form", u"Clip", None))
         self.smoothBtn.setText(QCoreApplication.translate("Form", u"Smooth", None))
         self.linearSubDivBtn.setText(QCoreApplication.translate("Form", u"Linear Subdivision", None))
-        self.butterflySubDivBtn.setText(QCoreApplication.translate("Form", u"Butterfly Subdivision", None))
+        self.fillHolesBtn.setText(QCoreApplication.translate("Form", u"Fill Holes", None))
     # retranslateUi
 

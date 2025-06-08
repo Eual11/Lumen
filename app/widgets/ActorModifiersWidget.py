@@ -12,7 +12,7 @@ class ActorModifiersWidget(QWidget):
         self.decimateBtn = self.ui.decimateBtn
         self.smoothBtn = self.ui.smoothBtn
         self.clipBtn = self.ui.clip
-        self.butterflySubDiv = self.ui.butterflySubDivBtn
+        self.fillHolesBtn = self.ui.fillHolesBtn
         self.linearSubDiv = self.ui.linearSubDivBtn
 
 

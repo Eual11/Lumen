@@ -2,15 +2,17 @@ from typing import Optional
 from PySide6 import QtCore
 from PySide6.QtGui import Qt
 from PySide6.QtCharts import QBarSet, QBarSeries, QChart, QChartView, QValueAxis
-from PySide6.QtWidgets import QApplication, QDoubleSpinBox, QFileDialog, QLabel, QLayout, QMainWindow, QSlider, QVBoxLayout, QFileDialog, QWidget
+from PySide6.QtWidgets import QApplication, QDoubleSpinBox, QColorDialog, QFileDialog, QLabel, QLayout, QMainWindow, QSlider, QVBoxLayout, QFileDialog, QWidget
 from app.HistogramWidget import HistogramWidget
 from app.LumenMainWindow2 import Ui_MainWindow
 from app.WelcomeWidget import WelcomeWidget
-from app.widgets import SegmentControls, SegmentOperationsWidget, SegmentsTable
+from app.widgets import PBRMaterialWidget, SegmentControls, SegmentOperationsWidget, SegmentsTable
 from app.widgets.ActorControlWidget import ActorControls
+from app.widgets.ActorModifiersWidget import ActorModifiersWidget
 from app.widgets.ActorsTableWidget import ActorsTableWidget
 from app.widgets.DicomLoadDialog import create_load_dicom_dialog
 from app.widgets.EraseSettingsDialog import create_erase_settings_dialog
+from app.widgets.ExportActorDialog import create_export_actor_dialog
 from app.widgets.FillHolesDialog import create_fill_holes_dialog
 from app.widgets.DicomViewer import ViewerMode
 from app.widgets.PaintSettingsDialog import create_paint_settings_dialog
@@ -50,6 +52,8 @@ class LumenMainWindow(QMainWindow):
         self.ui.viewPrimary.setLayout(l1)
         self.ui.viewSecondary1.setLayout(l2)
 
+        self.ui.viewerSelect.currentIndexChanged.connect(self.update_view_mode)
+
         self.ui.btnResetRenderer.clicked.connect(self.resetRenderer)
         self.ui.btnLoad.clicked.connect(lambda : create_load_dicom_dialog(self.lumen_core, self.segments_table))
 
@@ -85,6 +89,14 @@ class LumenMainWindow(QMainWindow):
         self.lumen_core.reset_renderer()
         self.actors_table.update_model()
     @QtCore.Slot()
+    def pick_base_color(self):
+        color = QColorDialog.getColor()
+        if color.isValid():
+            r = color.red() / 255.0
+            g = color.green() / 255.0
+            b = color.blue() / 255.0
+            self.lumen_core.renderer.set_selected_actor_base_color(r,g,b)
+    @QtCore.Slot()
     def render(self):
         method = self.segment_control.reconMethod.currentIndex()
         if method == 0:
@@ -114,6 +126,18 @@ class LumenMainWindow(QMainWindow):
     def removeActor(self):
         self.lumen_core.renderer.remove_selected_actor()
         self.actors_table.update_model()
+
+    @QtCore.Slot()
+    def update_view_mode(self, index):
+        if index == 0:  # Dual only
+            self.ui.viewPrimary.setVisible(True)
+            self.ui.viewSecondary1.setVisible(True)
+        elif index == 1:  # Slice only
+            self.ui.viewPrimary.setVisible(True)
+            self.ui.viewSecondary1.setVisible(False)
+        elif index == 2:  # 3D Only 
+            self.ui.viewPrimary.setVisible(False)
+            self.ui.viewSecondary1.setVisible(True)
     @QtCore.Slot()
     def segment_table_selection_change(self, selected:QtCore.QItemSelection, deselected:QtCore.QItemSelection):
         if not len(selected.indexes()):
@@ -234,19 +258,47 @@ class LumenMainWindow(QMainWindow):
         self.clear_layout(self.ui.content.layout())
 
         self.actor_control = ActorControls()
+        self.actor_modifier = ActorModifiersWidget()
         self.actor_control.setMaximumHeight(128)
 
         layout = self.ui.content.layout()
         if layout:
             # Connecting Signals
             self.actor_control.remove_actor_btn.clicked.connect(self.removeActor)
+            self.actor_control.export_btn.clicked.connect(lambda: create_export_actor_dialog(self.lumen_core))
             self.actor_control.surface_combo_box.currentIndexChanged.connect(self.lumen_core.renderer.set_selected_actor_display)
             self.actor_control.shading_combo_box.currentIndexChanged.connect(self.lumen_core.renderer.set_selected_actor_shading)
+
+            self.actor_modifier.decimateBtn.clicked.connect(self.lumen_core.renderer.decimate_selected_actor)
+            self.actor_modifier.smoothBtn.clicked.connect(self.lumen_core.renderer.smooth_selected_actor)
+            self.actor_modifier.clipBtn.clicked.connect(self.lumen_core.renderer.clip_selected_actor)
+
+            self.actor_modifier.linearSubDiv.clicked.connect(self.lumen_core.renderer.linear_subdivide_selected_actor)
+
+            self.actor_modifier.butterflySubDiv.clicked.connect(self.lumen_core.renderer.butterfly_subdivide_selected_actor)
+
+
+            self.pbr_material_widget = PBRMaterialWidget.PBRMaterialWidget()
+
+            self.pbr_material_widget.metallicSlider.valueChanged.connect(self.lumen_core.renderer.set_selected_actor_metallic)
+            self.pbr_material_widget.roughnessSlider.valueChanged.connect(self.lumen_core.renderer.set_selected_actor_roughness)
+            self.pbr_material_widget.specularSlider.valueChanged.connect(self.lumen_core.renderer.set_selected_actor_specular)
+            self.pbr_material_widget.specularPowerSlider.valueChanged.connect(self.lumen_core.renderer.set_selected_actor_specular_power)
+            self.pbr_material_widget.colorButton.clicked.connect(self.pick_base_color)
+
+
+
 
             layout.addWidget(self.actor_control)
             layout.addWidget(QLabel("Actors"))
             layout.addWidget(self.actors_table)
 
+            layout.addWidget(QLabel("Actor Modifiers"))
+
+            layout.addWidget(self.actor_modifier)
+
+            layout.addWidget(QLabel("PBR Material"))
+            layout.addWidget(self.pbr_material_widget)
 
 
 

@@ -55,6 +55,8 @@ class Lumen:
 
     def reset_renderer(self):
         self.renderer.reset()
+        self.selected_segment = -1
+        self.renderer.selected_actor = None
     def set_segment_visibility(self,idx,value):
         if idx <0 or idx >= len(self.segments):
             return
@@ -400,5 +402,5 @@ class Lumen:
         cleaned_transform = vtkTransform()
         cleaned_transform.SetMatrix(clean_matrix)
 
-        obj.GetProp3D().SetUserTransform(full_transform)
+        obj.GetProp3D().SetUserTransform(cleaned_transform)
 

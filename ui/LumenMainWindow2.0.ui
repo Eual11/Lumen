@@ -188,6 +188,59 @@
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>View Settings</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="viewerSelect">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>216</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QComboBox::SizeAdjustPolicy::AdjustToMinimumContentsLengthWithIcon</enum>
+        </property>
+        <item>
+         <property name="text">
+          <string>Dual View</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../RCS.qrc">
+           <normaloff>:/core/icons/dualview.svg</normaloff>:/core/icons/dualview.svg</iconset>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Slice Viewer Only</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../RCS.qrc">
+           <normaloff>:/core/icons/sliceonly_view.svg</normaloff>:/core/icons/sliceonly_view.svg</iconset>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3D Viewer Only</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../RCS.qrc">
+           <normaloff>:/core/icons/3donly_view.svg</normaloff>:/core/icons/3donly_view.svg</iconset>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>

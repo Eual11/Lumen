@@ -98,6 +98,29 @@ class Ui_MainWindow(object):
 
         self.toolbarHeader.addWidget(self.comboModules)
 
+        self.label = QLabel(self.centralwidget)
+        self.label.setObjectName(u"label")
+
+        self.toolbarHeader.addWidget(self.label)
+
+        self.viewerSelect = QComboBox(self.centralwidget)
+        icon7 = QIcon()
+        icon7.addFile(u":/core/icons/dualview.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.viewerSelect.addItem(icon7, "")
+        icon8 = QIcon()
+        icon8.addFile(u":/core/icons/sliceonly_view.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.viewerSelect.addItem(icon8, "")
+        icon9 = QIcon()
+        icon9.addFile(u":/core/icons/3donly_view.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.viewerSelect.addItem(icon9, "")
+        self.viewerSelect.setObjectName(u"viewerSelect")
+        sizePolicy.setHeightForWidth(self.viewerSelect.sizePolicy().hasHeightForWidth())
+        self.viewerSelect.setSizePolicy(sizePolicy)
+        self.viewerSelect.setMinimumSize(QSize(216, 32))
+        self.viewerSelect.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+
+        self.toolbarHeader.addWidget(self.viewerSelect)
+
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.toolbarHeader.addItem(self.horizontalSpacer)
@@ -201,6 +224,11 @@ class Ui_MainWindow(object):
         self.comboModules.setItemText(1, QCoreApplication.translate("MainWindow", u"Segementation Module", None))
         self.comboModules.setItemText(2, QCoreApplication.translate("MainWindow", u"Surface Extraction Module", None))
         self.comboModules.setItemText(3, QCoreApplication.translate("MainWindow", u"Volume Rendering Module", None))
+
+        self.label.setText(QCoreApplication.translate("MainWindow", u"View Settings", None))
+        self.viewerSelect.setItemText(0, QCoreApplication.translate("MainWindow", u"Dual View", None))
+        self.viewerSelect.setItemText(1, QCoreApplication.translate("MainWindow", u"Slice Viewer Only", None))
+        self.viewerSelect.setItemText(2, QCoreApplication.translate("MainWindow", u"3D Viewer Only", None))
 
         self.label_4.setText("")
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))

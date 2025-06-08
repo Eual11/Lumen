@@ -77,6 +77,31 @@ class Renderer(QWidget):
     def hasVolume(self)->bool:
         return len(self.actors)!=0
 
+    def write_selected_actor_obj(self, filepath):
+        if self.selected_actor:
+            actor = self.selected_actor
+            mapper = actor.GetMapper()
+            writer = vtk.vtkOBJWriter()
+            source_filter = mapper.GetInputConnection(0,0).GetProducer()
+            writer.SetFileName(filepath)
+            writer.SetInputConnection(source_filter.GetOutputPort())
+            writer.Write()
+    def write_selected_actor_stl(self, filepath):
+        if self.selected_actor:
+            actor = self.selected_actor
+            mapper = actor.GetMapper()
+            writer = vtk.vtkSTLWriter()
+            source_filter = mapper.GetInputConnection(0,0).GetProducer()
+            writer.SetFileName(filepath)
+            writer.SetInputConnection(source_filter.GetOutputPort())
+            writer.Write()
+
+
+
+
+
+            
+
     def writeObj(self, filepath):
         if(not self.actors):
             return
@@ -155,6 +180,173 @@ class Renderer(QWidget):
             elif idx == 2:
                 prop.SetRepresentationToWireframe()
             self.vtkWindow.Render()
+    def decimate_selected_actor(self):
+        if self.selected_actor:
+            actor = self.selected_actor
+            color = actor.GetProperty().GetColor()
+            mapper = actor.GetMapper()
+            source_filter = mapper.GetInputConnection(0,0).GetProducer()
+            polydata = source_filter.GetOutputPort()
+
+            decimate = vtk.vtkDecimatePro()
+
+            decimate.SetInputConnection(polydata)
+            decimate.SetTargetReduction(0.5)
+            decimate.PreserveTopologyOn()
+
+            decimate.Update()
+
+            new_mapper = vtk.vtkPolyDataMapper()
+            new_mapper.SetInputConnection(decimate.GetOutputPort())
+
+            new_mapper.SetScalarVisibility(0)
+            actor.SetMapper(new_mapper)
+            actor.GetProperty().SetColor(*color)
+            self.vtkWindow.Render()
+    def smooth_selected_actor(self):
+        if self.selected_actor:
+            actor = self.selected_actor
+            color = actor.GetProperty().GetColor()
+            mapper = actor.GetMapper()
+            source_filter = mapper.GetInputConnection(0,0).GetProducer()
+            polydata = source_filter.GetOutputPort()
+
+            smoother = vtk.vtkSmoothPolyDataFilter()
+            smoother.SetInputConnection(polydata)
+            smoother.SetNumberOfIterations(20)
+            smoother.Update()
+
+            new_mapper = vtk.vtkPolyDataMapper()
+            new_mapper.SetInputConnection(smoother.GetOutputPort())
+
+            actor.SetMapper(new_mapper)
+            new_mapper.SetScalarVisibility(0)
+            actor.GetProperty().SetColor(*color)
+    def linear_subdivide_selected_actor(self):
+        if self.selected_actor:
+            actor = self.selected_actor
+            try:
+                # Not Implemented
+                return
+                mapper = actor.GetMapper()
+                source_filter = mapper.GetInputConnection(0,0).GetProducer()
+                polydata = source_filter.GetOutputPort()
+
+                divider = vtk.vtkLinearSubdivisionFilter()
+                divider.SetInputConnection(polydata)
+                divider.SetNumberOfSubdivisions(2)
+                divider.Update()
+
+                new_mapper = vtk.vtkPolyDataMapper()
+                new_mapper.SetInputConnection(divider.GetOutputPort())
+
+                actor.SetMapper(new_mapper)
+            except Exception as e:
+                print(f"Subdivision Error {e}")
+    def butterfly_subdivide_selected_actor(self):
+        if self.selected_actor:
+            actor = self.selected_actor
+            try:
+                # Not Implemented
+                return
+                mapper = actor.GetMapper()
+                source_filter = mapper.GetInputConnection(0,0).GetProducer()
+                polydata = source_filter.GetOutputPort()
+
+
+                butterfly_subdiv = vtk.vtkButterflySubdivisionFilter()
+
+                butterfly_subdiv.SetInputData(polydata)
+                butterfly_subdiv.SetNumberOfSubdivisions(2)
+                butterfly_subdiv.Update()
+
+                new_mapper = vtk.vtkPolyDataMapper()
+                new_mapper.SetInputConnection(butterfly_subdiv.GetOutputPort())
+
+                actor.SetMapper(new_mapper)
+            except Exception as e:
+                print(f"Subdivision Error {e}")
+
+    def flip_clipping_planes(self,planes: vtk.vtkPlanes) -> vtk.vtkPlanes:
+        flipped_planes = vtk.vtkPlanes()
+        flipped_normals = vtk.vtkDoubleArray()
+        flipped_normals.SetNumberOfComponents(3)
+        flipped_normals.SetNumberOfTuples(planes.GetNormals().GetNumberOfTuples())
+
+        for i in range(planes.GetNormals().GetNumberOfTuples()):
+            n = planes.GetNormals().GetTuple3(i)
+            flipped_normals.SetTuple3(i, -n[0], -n[1], -n[2])
+
+        flipped_planes.SetNormals(flipped_normals)
+        flipped_planes.SetPoints(planes.GetPoints())  # origin stays the same
+        return flipped_planes
+
+    def clip_selected_actor(self):
+        if self.selected_actor:
+
+            actor = self.selected_actor
+            color = actor.GetProperty().GetColor()
+            # getting incapsulating box widget
+            box_widget = self.actors[actor]['box_widget']
+            mapper = actor.GetMapper()
+            source_filter = mapper.GetInputConnection(0,0).GetProducer()
+            polydata = source_filter.GetOutputPort()
+
+            clipper = vtk.vtkClipPolyData()
+            clipper.SetInputConnection(polydata)
+
+            planes = vtk.vtkPlanes()
+            
+            box_widget.GetPlanes(planes)
+
+            clipper.SetClipFunction(planes)
+            clipper.InsideOutOn()
+            clipper.Update()
+            
+
+            new_mapper = vtk.vtkPolyDataMapper()
+            new_mapper.SetInputConnection(clipper.GetOutputPort())
+
+            new_mapper.SetScalarVisibility(0)
+            actor.SetMapper(new_mapper)
+            actor.GetProperty().SetColor(*color)
+            box_widget.SetProp3D(actor)
+            box_widget.PlaceWidget()
+
+            self.vtkWindow.Render()
+
+
+    def set_selected_actor_metallic(self, value):
+        actor = self.selected_actor
+        if actor:
+            actor.GetProperty().SetMetallic(value / 100.0)
+            self.vtkWindow.Render()
+
+    def set_selected_actor_roughness(self, value):
+        actor = self.selected_actor
+        if actor:
+            actor.GetProperty().SetRoughness(value / 100.0)
+            self.vtkWindow.Render()
+
+    def set_selected_actor_specular(self, value):
+        actor = self.selected_actor
+        if actor:
+            actor.GetProperty().SetSpecular(value / 100.0)
+            self.vtkWindow.Render()
+
+
+    def set_selected_actor_base_color(self, r, g, b):
+        actor = self.selected_actor
+        if actor:
+            actor.GetProperty().SetColor(r, g, b)
+            self.vtkWindow.Render()
+
+    def set_selected_actor_specular_power(self, value):
+        actor = self.selected_actor
+        if actor:
+            actor.GetProperty().SetSpecularPower(value) 
+            self.vtkWindow.Render()
+
 
 
 
@@ -189,6 +381,8 @@ class Renderer(QWidget):
         # Clear both dictionaries
         self.actors.clear()
         self.volumes.clear()
+
+        self.selected_actor = None
 
         # Force re-render
         self.vtkWindow.Render()

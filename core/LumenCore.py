@@ -280,7 +280,6 @@ class Lumen:
         box_widget.SetPlaceFactor(1.0)
         box_widget.SetProp3D(volume)
         box_widget.PlaceWidget()
-        box_widget.On()
 
         box_widget.AddObserver(vtkCommand.InteractionEvent, self.boxVolumeCallback)
 

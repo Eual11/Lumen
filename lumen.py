@@ -24,6 +24,7 @@ import sys
 from app.widgets.RegionGrowingDialog import create_region_grow_dialog
 from app.widgets.SmartRegionGrowingDialog import create_smart_region_grow_dialog
 from app.widgets.ThresholdDialog import ThresholdDialog, create_threshold_dialog
+from app.widgets.VolumesTableWidget import VolumeTableModel, VolumesTableWidget
 from core.LumenCore import Lumen, RenderMethods
 from core.SegmentOperationCommand import RegionGrowCommand
 class LumenMainWindow(QMainWindow):
@@ -62,6 +63,7 @@ class LumenMainWindow(QMainWindow):
         self.segments_table = SegmentsTable.SegementsTableWidget(self.lumen_core.segments,self.lumen_core)
 
         self.actors_table = ActorsTableWidget(self.lumen_core)
+        self.volumes_table = VolumesTableWidget(self.lumen_core)
 
         # Dialogs 
 
@@ -90,6 +92,7 @@ class LumenMainWindow(QMainWindow):
     def resetRenderer(self):
         self.lumen_core.reset_renderer()
         self.actors_table.update_model()
+        self.volumes_table.update_model()
     @QtCore.Slot()
     def pick_base_color(self):
         color = QColorDialog.getColor()
@@ -110,6 +113,7 @@ class LumenMainWindow(QMainWindow):
         elif method == 3:
             self.lumen_core.render_selected_segment(RenderMethods.GPU_RAYCASTING)
         self.actors_table.update_model()
+        self.volumes_table.update_model()
 
 
 
@@ -256,6 +260,8 @@ class LumenMainWindow(QMainWindow):
             self.load_segment_editor()
         elif idx ==2:
             self.load_surface_recon_module()
+        elif idx == 3:
+            self.load_volume_module()
     def load_surface_recon_module(self):
         self.clear_layout(self.ui.content.layout())
 
@@ -301,6 +307,17 @@ class LumenMainWindow(QMainWindow):
 
             layout.addWidget(QLabel("PBR Material"))
             layout.addWidget(self.pbr_material_widget)
+
+    def load_volume_module(self):
+        self.clear_layout(self.ui.content.layout())
+        self.volumes_table.setMinimumHeight(320)
+        layout = self.ui.content.layout()
+
+        if layout:
+            layout.addWidget(QLabel("Volumes"))
+            layout.addWidget(self.volumes_table)
+
+
 
 
 

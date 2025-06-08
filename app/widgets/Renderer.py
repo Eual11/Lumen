@@ -39,6 +39,7 @@ class Renderer(QWidget):
 
         self.actors: dict[vtk.vtkActor, ActorInfo] = {}
         self.selected_actor: Optional[vtk.vtkActor] = None
+        self.selected_volume: Optional[vtk.vtkActor] = None
 
 
         self.volumes: dict[vtk.vtkVolume, ActorInfo] = {}
@@ -97,11 +98,6 @@ class Renderer(QWidget):
             writer.Write()
 
 
-
-
-
-            
-
     def writeObj(self, filepath):
         if(not self.actors):
             return
@@ -130,6 +126,23 @@ class Renderer(QWidget):
         info = self.actors[actor]
         info['visible'] = value
         actor.SetVisibility(value)
+        if not value:
+            info['box_widget'].Off()
+        self.vtkWindow.Render()
+
+    def set_volume_transform(self, volume:vtk.vtkVolume, value:bool):
+        info = self.volumes[volume]
+        info['transform_enabled'] = value
+        if value:
+            info['box_widget'].On()
+        else:
+            info['box_widget'].Off()
+        self.vtkWindow.Render()
+
+    def set_volume_visibility(self, volume:vtk.vtkVolume, value:bool):
+        info = self.volumes[volume]
+        info['visible'] = value
+        volume.SetVisibility(value)
         if not value:
             info['box_widget'].Off()
         self.vtkWindow.Render()

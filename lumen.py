@@ -10,9 +10,11 @@ from app.widgets import PBRMaterialWidget, SegmentControls, SegmentOperationsWid
 from app.widgets.ActorControlWidget import ActorControls
 from app.widgets.ActorModifiersWidget import ActorModifiersWidget
 from app.widgets.ActorsTableWidget import ActorsTableWidget
+from app.widgets.DecimateActorDialog import create_decimate_actor_dialog
 from app.widgets.DicomLoadDialog import create_load_dicom_dialog
 from app.widgets.EraseSettingsDialog import create_erase_settings_dialog
 from app.widgets.ExportActorDialog import create_export_actor_dialog
+from app.widgets.FillActorHoles import create_fill_holes_actor_dialog
 from app.widgets.FillHolesDialog import create_fill_holes_dialog
 from app.widgets.DicomViewer import ViewerMode
 from app.widgets.PaintSettingsDialog import create_paint_settings_dialog
@@ -269,13 +271,13 @@ class LumenMainWindow(QMainWindow):
             self.actor_control.surface_combo_box.currentIndexChanged.connect(self.lumen_core.renderer.set_selected_actor_display)
             self.actor_control.shading_combo_box.currentIndexChanged.connect(self.lumen_core.renderer.set_selected_actor_shading)
 
-            self.actor_modifier.decimateBtn.clicked.connect(self.lumen_core.renderer.decimate_selected_actor)
+            self.actor_modifier.decimateBtn.clicked.connect(lambda:create_decimate_actor_dialog(self.lumen_core))
             self.actor_modifier.smoothBtn.clicked.connect(self.lumen_core.renderer.smooth_selected_actor)
             self.actor_modifier.clipBtn.clicked.connect(self.lumen_core.renderer.clip_selected_actor)
 
             self.actor_modifier.linearSubDiv.clicked.connect(self.lumen_core.renderer.linear_subdivide_selected_actor)
 
-            self.actor_modifier.butterflySubDiv.clicked.connect(self.lumen_core.renderer.butterfly_subdivide_selected_actor)
+            self.actor_modifier.fillHolesBtn.clicked.connect(lambda: create_fill_holes_actor_dialog(self.lumen_core))
 
 
             self.pbr_material_widget = PBRMaterialWidget.PBRMaterialWidget()

@@ -180,7 +180,7 @@ class Renderer(QWidget):
             elif idx == 2:
                 prop.SetRepresentationToWireframe()
             self.vtkWindow.Render()
-    def decimate_selected_actor(self):
+    def decimate_selected_actor(self,value, preserve_toplogy=True):
         if self.selected_actor:
             actor = self.selected_actor
             color = actor.GetProperty().GetColor()
@@ -191,8 +191,14 @@ class Renderer(QWidget):
             decimate = vtk.vtkDecimatePro()
 
             decimate.SetInputConnection(polydata)
-            decimate.SetTargetReduction(0.5)
-            decimate.PreserveTopologyOn()
+            decimate.SetTargetReduction(value)
+            if preserve_toplogy:
+                decimate.PreserveTopologyOn()
+            else:
+                decimate.PreserveTopologyOff()
+                decimate.SplittingOn()
+                decimate.BoundaryVertexDeletionOn()
+                decimate.SetMaximumError(vtk.VTK_DOUBLE_MAX)
 
             decimate.Update()
 
@@ -203,6 +209,32 @@ class Renderer(QWidget):
             actor.SetMapper(new_mapper)
             actor.GetProperty().SetColor(*color)
             self.vtkWindow.Render()
+
+    def fill_selected_actor_holes(self, hole_radius:float):
+        if self.selected_actor:
+            actor = self.selected_actor
+            color = actor.GetProperty().GetColor()
+            mapper = actor.GetMapper()
+            source_filter = mapper.GetInputConnection(0,0).GetProducer()
+            polydata = source_filter.GetOutputPort()
+
+            filler = vtk.vtkFillHolesFilter()
+
+            filler.SetHoleSize(hole_radius)
+            filler.SetInputConnection(polydata)
+            filler.Update()
+            new_mapper = vtk.vtkPolyDataMapper()
+            new_mapper.SetInputConnection(filler.GetOutputPort())
+
+            new_mapper.SetScalarVisibility(0)
+            actor.SetMapper(new_mapper)
+            actor.GetProperty().SetColor(*color)
+            self.vtkWindow.Render()
+
+
+
+
+
     def smooth_selected_actor(self):
         if self.selected_actor:
             actor = self.selected_actor

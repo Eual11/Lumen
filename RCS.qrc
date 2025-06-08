@@ -1,5 +1,13 @@
 <RCC>
   <qresource prefix="core">
+    <file>icons/3donly_view.svg</file>
+    <file>icons/dualview.svg</file>
+    <file>icons/sliceonly_view.svg</file>
+    <file>icons/linear_subdiv.svg</file>
+    <file>icons/butter_fly.svg</file>
+    <file>icons/clip.svg</file>
+    <file>icons/decimate_icon.svg</file>
+    <file>icons/smoothing_icon.svg</file>
     <file>icons/color_grid.svg</file>
     <file>icons/cubes.svg</file>
     <file>icons/erase.svg</file>

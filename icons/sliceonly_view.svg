@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" version="1.1" id="svg1" xml:space="preserve" __cpp="1">
+  <defs id="defs1" __cpp="1"></defs>
+  <g id="LightThemeEnabledLayer" style="display:inline" __cpp="1">
+    <rect style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1.99937;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke" id="rect1" width="36" height="36" x="-41" y="5" transform="rotate(-90)" __cpp="1"></rect>
+    <rect style="fill:#ed726c;fill-opacity:1;stroke:none;stroke-width:2.00182;stroke-linecap:round;stroke-dashoffset:0.8;paint-order:fill markers stroke" id="rect2" width="34.06176" height="4" x="5.938241" y="6" __cpp="1"></rect>
+    <path style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.999999px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:0.5" d="M 22.5,10 V 40.000001" id="path2" __cpp="1"></path>
+    <path style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:0.5" d="M 6.0000003,25.462735 H 22" id="path2-3" __cpp="1"></path>
+    <path style="display:inline;fill:none;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:0.5" d="M 23,25.5 H 40" id="path2-3-7" __cpp="1"></path>
+  </g>
+</svg>

@@ -26,6 +26,8 @@
     <file>icons/gear_color.svg</file>
     <file>icons/link_off.svg</file>
     <file>icons/link_on.svg</file>
+    <file>icons/logo-full.svg</file>
+    <file>icons/logo-icon.png</file>
     <file>logo.jpg</file>
   </qresource>
   <qresource prefix="segmen-operation">

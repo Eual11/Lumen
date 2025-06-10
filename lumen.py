@@ -1,6 +1,6 @@
 from typing import Optional
 from PySide6 import QtCore
-from PySide6.QtGui import Qt
+from PySide6.QtGui import Qt,QIcon
 from PySide6.QtCharts import QBarSet, QBarSeries, QChart, QChartView, QValueAxis
 from PySide6.QtWidgets import QApplication, QDoubleSpinBox, QColorDialog, QFileDialog, QLabel, QLayout, QMainWindow, QSlider, QVBoxLayout, QFileDialog, QWidget
 from app.HistogramWidget import HistogramWidget
@@ -14,6 +14,7 @@ from app.widgets.DecimateActorDialog import create_decimate_actor_dialog
 from app.widgets.DicomLoadDialog import create_load_dicom_dialog
 from app.widgets.EraseSettingsDialog import create_erase_settings_dialog
 from app.widgets.ExportActorDialog import create_export_actor_dialog
+from app.widgets.ExportRenderDialog import create_export_render_dialog
 from app.widgets.FillActorHoles import create_fill_holes_actor_dialog
 from app.widgets.FillHolesDialog import create_fill_holes_dialog
 from app.widgets.DicomViewer import ViewerMode
@@ -44,6 +45,11 @@ class LumenMainWindow(QMainWindow):
         self.renderer = self.lumen_core.get_renderer()
 
 
+        icon = QIcon(":core/icons/logo-icon.png")  
+
+        self.setWindowIcon(icon)
+
+
         # Setting up UI for VTK Image viewers and Renderer
 
         l1 = QVBoxLayout()
@@ -59,6 +65,7 @@ class LumenMainWindow(QMainWindow):
 
         self.ui.btnResetRenderer.clicked.connect(self.resetRenderer)
         self.ui.btnLoad.clicked.connect(lambda : create_load_dicom_dialog(self.lumen_core, self.segments_table))
+        self.ui.btnSaveRender.clicked.connect(lambda:create_export_render_dialog(self.lumen_core))
 
         self.segments_table = SegmentsTable.SegementsTableWidget(self.lumen_core.segments,self.lumen_core)
 

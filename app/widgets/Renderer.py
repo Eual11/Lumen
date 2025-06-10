@@ -114,6 +114,29 @@ class Renderer(QWidget):
         writer.SetFileName(filepath)
         writer.SetInputConnection(appedMapper.GetOutputPort())
         writer.Write()
+
+    def writePNG(self, filepath="screenshot.png"):
+        png_filter = vtk.vtkWindowToImageFilter()
+        png_filter.SetInput(self.vtkWindow)
+        png_filter.Update()
+        writer =  vtk.vtkPNGWriter()
+        writer.SetFileName(filepath)
+        writer.SetInputConnection(png_filter.GetOutputPort())
+
+        writer.Write()
+
+    def writeJPG(self, filepath="screenshot.jpg"):
+        png_filter = vtk.vtkWindowToImageFilter()
+        png_filter.SetInput(self.vtkWindow)
+        png_filter.Update()
+        writer =  vtk.vtkJPEGWriter()
+        writer.SetFileName(filepath)
+        writer.SetInputConnection(png_filter.GetOutputPort())
+
+        writer.Write()
+
+
+
     def set_actor_transform(self, actor:vtk.vtkActor, value:bool):
         info = self.actors[actor]
         info['transform_enabled'] = value

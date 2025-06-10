@@ -9,9 +9,8 @@ class WelcomeWidget(QWidget):
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # Optional logo (use your own or comment this out if not needed)
         logo = QLabel()
-        pixmap = QPixmap(":core/logo.jpg")  # Use Qt resource path if available
+        pixmap = QPixmap(":core/icons/logo-full.svg")  # Use Qt resource path if available
         logo.setPixmap(pixmap.scaledToWidth(150, Qt.TransformationMode.SmoothTransformation))
         logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
 

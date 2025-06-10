@@ -270,7 +270,7 @@ class DicomViewer(QWidget):
 
         world_pos = picker.GetPickPosition()
 
-        x,y,z = [round((world_pos[i]-self.origin[i])/self.spacing[i]) for i in range(len(world_pos))]
+        x,y,z = [round((world_pos[i]-self.origin[i])/self.spacing[i]) if self.spacing[i] else 0 for i in range(len(world_pos))]
 
 
 
@@ -295,7 +295,7 @@ class DicomViewer(QWidget):
 
        world_pos = picker.GetPickPosition()
 
-       x,y,z = [round((world_pos[i]-self.origin[i])/self.spacing[i]) for i in range(len(world_pos))]
+       x,y,z = [round((world_pos[i]-self.origin[i])/self.spacing[i]) if self.spacing[i] else 0 for i in range(len(world_pos))]
 
        if x <0 or x >self.extent[1] or y <0 or y>self.extent[3] or z <0 or z > self.extent[5]:
             self.update_text_actor(0,0,"")
@@ -341,7 +341,7 @@ class DicomViewer(QWidget):
 
         world_pos = picker.GetPickPosition()
 
-        x,y,z = [round((world_pos[i]-self.origin[i])/self.spacing[i]) for i in range(len(world_pos))]
+        x,y,z = [round((world_pos[i]-self.origin[i])/self.spacing[i]) if self.spacing[i] else 0 for i in range(len(world_pos))]
 
 
         if x <0 or x >self.extent[1] or y <0 or y>self.extent[3] or z <0 or z > self.extent[5]:

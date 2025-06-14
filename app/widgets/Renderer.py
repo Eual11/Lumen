@@ -39,7 +39,7 @@ class Renderer(QWidget):
 
         self.actors: dict[vtk.vtkActor, ActorInfo] = {}
         self.selected_actor: Optional[vtk.vtkActor] = None
-        self.selected_volume: Optional[vtk.vtkActor] = None
+        self.selected_volume: Optional[vtk.vtkVolume] = None
 
 
         self.volumes: dict[vtk.vtkVolume, ActorInfo] = {}
@@ -177,9 +177,19 @@ class Renderer(QWidget):
             self.selected_actor = actor
         else:
             self.selected_actor = None
+
+    def set_selected_volume(self,volume:vtk.vtkVolume):
+        if volume and volume in self.volumes:
+            self.selected_volume = volume
+        else:
+            self.selected_volume = None
+
     def remove_selected_actor(self):
         self.remove_actor(self.selected_actor)
         self.selected_actor = None
+    def remove_selected_volume(self):
+        self.remove_volume(self.selected_volume)
+        self.selected_volume = None
     def remove_actor(self, actor):
         if actor and actor in self.actors:
             self.renderer.RemoveActor(actor)
@@ -191,6 +201,17 @@ class Renderer(QWidget):
                     widget.RemoveAllObservers()
                 widget.SetInteractor(None)
             self.actors.pop(actor)
+    def remove_volume(self, volume):
+        if volume and volume in self.volumes:
+            self.renderer.RemoveVolume(volume)
+            info = self.volumes[volume]
+            widget = info.get('box_widget')
+            if widget:
+                widget.SetEnabled(False)
+                if widget.HasObserver(vtk.vtkCommand.InteractionEvent):
+                    widget.RemoveAllObservers()
+                widget.SetInteractor(None)
+            self.volumes.pop(volume)
     def set_selected_actor_shading(self,idx):
         if self.selected_actor:
             prop = self.selected_actor.GetProperty()

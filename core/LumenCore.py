@@ -149,7 +149,7 @@ class Lumen:
             shape = img.GetDimensions()
             img_arr = numpy_support.vtk_to_numpy(img.GetPointData().GetScalars())
             dims = img.GetDimensions()
-            img_arr = img_arr.reshape(dims[2], dims[1], dims[1])
+            img_arr = img_arr.reshape(dims[2], dims[1], dims[0])
             final_img = mask*img_arr
             final_img_vtk_array =  numpy_support.numpy_to_vtk(final_img.ravel(), deep=False, array_type=VTK_INT)
             final_vtk_img = vtkarrayToVtkImageData(final_img_vtk_array, shape,img.GetSpacing())
@@ -362,7 +362,7 @@ class Lumen:
         cleaned_transform = vtkTransform()
         cleaned_transform.SetMatrix(clean_matrix)
 
-        obj.GetProp3D().SetUserTransform(cleaned_transform)
+        obj.GetProp3D().SetUserTransform(full_transform)
 
 
     def boxCallback(self, obj: vtkBoxWidget, event):

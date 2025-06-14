@@ -141,6 +141,10 @@ class LumenMainWindow(QMainWindow):
         self.actors_table.update_model()
 
     @QtCore.Slot()
+    def removeVolume(self):
+        self.lumen_core.renderer.remove_selected_volume()
+        self.volumes_table.update_model()
+    @QtCore.Slot()
     def update_view_mode(self, index):
         if index == 0:  # Dual only
             self.ui.viewPrimary.setVisible(True)
@@ -162,6 +166,10 @@ class LumenMainWindow(QMainWindow):
     @QtCore.Slot()
     def actors_table_selection_change(self, actor,info):
         self.lumen_core.renderer.set_selected_actor(actor)
+    @QtCore.Slot()
+    def volumes_table_selection_change(self, volume,info):
+        self.lumen_core.renderer.set_selected_volume(volume)
+
 
     def disconnect_signals(self, widget:QWidget):
         for sig in getattr(widget, "_connected_signals",[]):
@@ -211,6 +219,7 @@ class LumenMainWindow(QMainWindow):
 
         self.segments_table.set_selection_change_callback(self.segment_table_selection_change)
         self.actors_table.set_selection_change_callback(self.actors_table_selection_change)
+        self.volumes_table.set_selection_change_callback(self.volumes_table_selection_change)
         self.segments_table.setMinimumHeight(320)
         self.segment_operations.setMinimumHeight(220)
 
@@ -318,9 +327,13 @@ class LumenMainWindow(QMainWindow):
     def load_volume_module(self):
         self.clear_layout(self.ui.content.layout())
         self.volumes_table.setMinimumHeight(320)
+        self.volume_control = ActorControls()
         layout = self.ui.content.layout()
 
         if layout:
+            self.volume_control.remove_actor_btn.clicked.connect(self.removeVolume)
+
+            layout.addWidget(self.volume_control)
             layout.addWidget(QLabel("Volumes"))
             layout.addWidget(self.volumes_table)
 

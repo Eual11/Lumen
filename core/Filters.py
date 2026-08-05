@@ -1,6 +1,6 @@
 from SimpleITK import Cast, GetArrayFromImage, MedianImageFilter, RescaleIntensity, WriteImage, sitkUInt16, sitkUInt8
 
-import vtk
+from vtkmodules.vtkCommonDataModel import vtkImageData
 
 from utils.utils import SITKImageTOVtkImageData, vtkImageToSITKImage
 
@@ -20,8 +20,8 @@ class MyCustomImageFilter(VTKPythonAlgorithmBase):
 
     def RequestData(self, request, inInfo, outInfo):
         # Get input and output
-        input_image = vtk.vtkImageData.GetData(inInfo[0])
-        output_image = vtk.vtkImageData.GetData(outInfo)
+        input_image = vtkImageData.GetData(inInfo[0])
+        output_image = vtkImageData.GetData(outInfo)
 
         # Shallow copy input to output as a starting point
         output_image.ShallowCopy(input_image)
@@ -45,8 +45,8 @@ class MedianFilter(VTKPythonAlgorithmBase):
 
     def RequestData(self, request, inInfo, outInfo):
         print("requested")
-        input_data = vtk.vtkImageData.GetData(inInfo[0])
-        out_data = vtk.vtkImageData.GetData(outInfo)
+        input_data = vtkImageData.GetData(inInfo[0])
+        out_data = vtkImageData.GetData(outInfo)
 
         sitk_image = vtkImageToSITKImage(input_data)
 

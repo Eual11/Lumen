@@ -6,8 +6,14 @@ from PySide6.QtWidgets import QVBoxLayout, QWidget, QMessageBox
 from typing import TypedDict
 from numpy import spacing
 import numpy
+import utils.vtk_init  # noqa: F401  registers VTK's OpenGL object factories
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-import vtk
+from vtkmodules.vtkCommonCore import VTK_CHAR, vtkCommand, vtkLookupTable
+from vtkmodules.vtkCommonDataModel import vtkImageData, vtkPlane
+from vtkmodules.vtkCommonExecutionModel import vtkAlgorithm, vtkAlgorithmOutput
+from vtkmodules.vtkInteractionStyle import vtkInteractorStyleImage
+from vtkmodules.vtkRenderingCore import vtkCellPicker, vtkImageSlice, vtkRenderer, vtkTextActor
+from vtkmodules.vtkRenderingImage import vtkImageResliceMapper
 
 from core.SegmentOperationCommand import ConnectedRegionGrowCommand, RegionGrowCommand
 from utils.utils import numpyArrToVtkImageData
@@ -16,9 +22,9 @@ from .ImageViewerUI import Ui_ImageViewerUI
 from core.Segment import Segment
 
 class SegmentActorInfo(TypedDict):
-    actor: vtk.vtkImageSlice
-    mapper: vtk.vtkImageResliceMapper
-    lut: vtk.vtkLookupTable
+    actor: vtkImageSlice
+    mapper: vtkImageResliceMapper
+    lut: vtkLookupTable
 
 class ViewerMode(Enum):
     NAVIGATION = 1 
@@ -27,7 +33,7 @@ class ViewerMode(Enum):
     SEED_PLACEMENT = 4
 
 class DicomViewer(QWidget):
-    def __init__(self, source: Optional[vtk.vtkAlgorithmOutput] = None, parent=None):
+    def __init__(self, source: Optional[vtkAlgorithmOutput] = None, parent=None):
         super().__init__(parent)
 
         self.ui = Ui_ImageViewerUI()
@@ -38,24 +44,24 @@ class DicomViewer(QWidget):
         layout.addWidget(self.vtkInteractor)
         self.ui.vtkParent.setLayout(layout)
 
-        self.renderer = vtk.vtkRenderer()
+        self.renderer = vtkRenderer()
         self.render_window = self.vtkInteractor.GetRenderWindow()
 
         #Testing interactor events
-        self.render_window.GetInteractor().AddObserver(vtk.vtkCommand.MouseMoveEvent, self.handle_mouse_movement)
-        self.render_window.GetInteractor().AddObserver(vtk.vtkCommand.LeftButtonPressEvent, self.handle_left_click)
-        self.render_window.GetInteractor().AddObserver(vtk.vtkCommand.LeftButtonReleaseEvent, self.handle_left_release)
+        self.render_window.GetInteractor().AddObserver(vtkCommand.MouseMoveEvent, self.handle_mouse_movement)
+        self.render_window.GetInteractor().AddObserver(vtkCommand.LeftButtonPressEvent, self.handle_left_click)
+        self.render_window.GetInteractor().AddObserver(vtkCommand.LeftButtonReleaseEvent, self.handle_left_release)
         self.render_window.AddRenderer(self.renderer)
 
-        self.mapper = vtk.vtkImageResliceMapper()
+        self.mapper = vtkImageResliceMapper()
         self.mapper.SliceFacesCameraOff()
         self.mapper.SliceAtFocalPointOff()
-        self.slice_actor = vtk.vtkImageSlice()
+        self.slice_actor = vtkImageSlice()
         self.slice_actor.SetMapper(self.mapper)
         self.renderer.AddViewProp(self.slice_actor)
 
         self.renderer.GetActiveCamera().ParallelProjectionOn()
-        self.vtkInteractor.SetInteractorStyle(vtk.vtkInteractorStyleImage())
+        self.vtkInteractor.SetInteractorStyle(vtkInteractorStyleImage())
 
         self.ui.sliceSlider.valueChanged.connect(self.setSliceIdx)
 
@@ -84,8 +90,8 @@ class DicomViewer(QWidget):
         self.eraser_radius = 5
         self.eraser_depth = 1
 
-        self.text_actor:Optional[vtk.vtkTextActor] = None
-        self.image_data:Optional[vtk.vtkImageData] = None
+        self.text_actor:Optional[vtkTextActor] = None
+        self.image_data:Optional[vtkImageData] = None
 
         self.updateSource(source)
 
@@ -101,7 +107,7 @@ class DicomViewer(QWidget):
             self.slice_index = int(idx)
             self.slice_z = z
 
-            plane = vtk.vtkPlane()
+            plane = vtkPlane()
             plane.SetOrigin(self.origin[0], self.origin[1], z)
             plane.SetNormal(0, 0, 1)
 
@@ -115,14 +121,14 @@ class DicomViewer(QWidget):
             self.renderImage()
 
 
-    def updateSource(self, source: Optional[Union[vtk.vtkAlgorithmOutput, vtk.vtkAlgorithm]]):
+    def updateSource(self, source: Optional[Union[vtkAlgorithmOutput, vtkAlgorithm]]):
         self.source = None  # Reset source
         output_port = None
 
-        if isinstance(source, vtk.vtkAlgorithmOutput):
+        if isinstance(source, vtkAlgorithmOutput):
             output_port = source
             self.source = output_port
-        elif isinstance(source, vtk.vtkAlgorithm):
+        elif isinstance(source, vtkAlgorithm):
             output_port = source.GetOutputPort()
             self.source = output_port
         else:
@@ -140,7 +146,7 @@ class DicomViewer(QWidget):
         # image filter once a filter has been added to the pipeline. With none,
         # it is the source's vtkTrivialProducer, a plain vtkAlgorithm with no
         # GetOutput. This form works for both and respects the port index.
-        self.image_data:vtk.vtkImageData = producer.GetOutputDataObject(output_port.GetIndex())
+        self.image_data:vtkImageData = producer.GetOutputDataObject(output_port.GetIndex())
         self.spacing = self.image_data.GetSpacing()
         self.origin = self.image_data.GetOrigin()
         self.extent = self.image_data.GetExtent()
@@ -164,14 +170,14 @@ class DicomViewer(QWidget):
         self.vtkInteractor.GetRenderWindow().Finalize()
 
     def add_segment_overlay(self,segment:Segment):
-        mapper = vtk.vtkImageResliceMapper()
-        img_data = numpyArrToVtkImageData(segment.mask, self.spacing, vtk.VTK_CHAR, self.origin)
+        mapper = vtkImageResliceMapper()
+        img_data = numpyArrToVtkImageData(segment.mask, self.spacing, VTK_CHAR, self.origin)
         mapper.SetInputData(img_data)
 
         mapper.SliceFacesCameraOff()
         mapper.SliceAtFocalPointOff()
 
-        lut = vtk.vtkLookupTable()
+        lut = vtkLookupTable()
         lut.SetNumberOfTableValues(2)
         lut.SetRange(0,1)
         lut.Build()
@@ -179,7 +185,7 @@ class DicomViewer(QWidget):
         cols =[c/255.0 for c in segment.color] 
         lut.SetTableValue(1,cols[0],cols[1], cols[2],0.5)
 
-        actor = vtk.vtkImageSlice()
+        actor = vtkImageSlice()
         actor.SetMapper(mapper)
         actor.GetProperty().SetLookupTable(lut)
         actor.GetProperty().UseLookupTableScalarRangeOn()
@@ -220,7 +226,7 @@ class DicomViewer(QWidget):
         if not segment_info:
             return
 
-        img_data = numpyArrToVtkImageData(segment.mask, self.spacing, vtk.VTK_CHAR, self.origin)
+        img_data = numpyArrToVtkImageData(segment.mask, self.spacing, VTK_CHAR, self.origin)
 
         mapper = segment_info['actor'].GetMapper()
         mapper.SetInputData(img_data)
@@ -240,7 +246,7 @@ class DicomViewer(QWidget):
     def setup_text_actor(self):
         if self.text_actor:
             self.renderer.RemoveActor2D(self.text_actor)
-        self.text_actor = vtk.vtkTextActor()
+        self.text_actor = vtkTextActor()
         property = self.text_actor.GetTextProperty()
         property.SetFontSize(12)
         property.SetShadow(True)
@@ -273,7 +279,7 @@ class DicomViewer(QWidget):
 
     def paint_at_mouse(self, obj):
         x_pos,y_pos = obj.GetEventPosition()
-        picker = vtk.vtkCellPicker()
+        picker = vtkCellPicker()
         picker.SetTolerance(0.0005)
         # Third argument is a display-space z, not a slice: 0 is the convention
         # for a 2D pick. The ray direction is what selects the cell.
@@ -300,7 +306,7 @@ class DicomViewer(QWidget):
 
     def handle_mouse_movement(self,obj,event):
        x_pos,y_pos = obj.GetEventPosition()
-       picker = vtk.vtkCellPicker()
+       picker = vtkCellPicker()
        picker.SetTolerance(0.0005)
        picker.Pick(x_pos,y_pos,0.0, self.renderer)
 
@@ -346,7 +352,7 @@ class DicomViewer(QWidget):
         self.update_segment_mask(self.selected_segment)
     def region_grow_segment(self,obj):
         x,y = obj.GetEventPosition()
-        picker = vtk.vtkCellPicker()
+        picker = vtkCellPicker()
         picker.SetTolerance(0.0005)
         picker.Pick(x,y,0.0, self.renderer)
 

@@ -1,6 +1,6 @@
 from typing import List, Optional
-from vtk import vtkAlgorithmOutput, vtkCubeSource
-from vtk import vtkAlgorithm
+from vtkmodules.vtkCommonExecutionModel import vtkAlgorithm, vtkAlgorithmOutput
+from vtkmodules.vtkFiltersSources import vtkCubeSource
 
 
 class DynamicPipeline :

@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from core.LumenCore import Lumen
-import vtk
+from vtkmodules.vtkImagingGeneral import vtkImageGaussianSmooth, vtkImageGradientMagnitude, vtkImageLaplacian, vtkImageMedian3D
 
 class DicomLoadDialog(QDialog):
     def __init__(self, lumen_core: Lumen, segments_table, parent=None):
@@ -141,24 +141,24 @@ class DicomLoadDialog(QDialog):
 
         if current_filter == 1:  # Median
             kernel = self.param_controls["kernel"].value()
-            median_filter = vtk.vtkImageMedian3D()
+            median_filter = vtkImageMedian3D()
             median_filter.SetKernelSize(kernel, kernel, kernel)
             self.lumen_core.add_filter(median_filter)
 
         elif current_filter == 2:  # Gaussian
             stddev = self.param_controls["stddev"].value()
-            gaussian_filter = vtk.vtkImageGaussianSmooth()
+            gaussian_filter = vtkImageGaussianSmooth()
             gaussian_filter.SetDimensionality(3)
             gaussian_filter.SetRadiusFactors(stddev, stddev, stddev)
             gaussian_filter.SetStandardDeviations(stddev, stddev, stddev)
             self.lumen_core.add_filter(gaussian_filter)
 
         elif current_filter == 3:  # Laplacian
-            laplacian_filter = vtk.vtkImageLaplacian()
+            laplacian_filter = vtkImageLaplacian()
             self.lumen_core.add_filter(laplacian_filter)
 
         elif current_filter == 4:  # Gradient
-            gradient_filter = vtk.vtkImageGradientMagnitude()
+            gradient_filter = vtkImageGradientMagnitude()
             gradient_filter.SetDimensionality(3)
             self.lumen_core.add_filter(gradient_filter)
 

@@ -1,7 +1,7 @@
 from core.Segment import Segment
 import SimpleITK as sitk
 from utils.utils import vtkImageToSITKImage
-from vtk import vtkImageData
+from vtkmodules.vtkCommonDataModel import vtkImageData
 class SegmentOperationCommand:
     def __init__(self, segment:Segment) -> None:
         self.segment = segment

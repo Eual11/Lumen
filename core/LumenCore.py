@@ -13,7 +13,18 @@ from app.widgets.Renderer import Renderer
 from core import DicomLoader, DymanicPipeline
 
 from core.SegmentOperationCommand import ThresholdCommand
-from vtk import vtkActor, vtkAlgorithm, vtkBox, vtkBoxWidget, vtkColorTransferFunction, vtkCommand, vtkCubeSource, vtkDoubleArray, vtkFixedPointVolumeRayCastMapper, vtkFlyingEdges3D, vtkGPUVolumeRayCastMapper, vtkImageData, vtkImageFlip, vtkImageGaussianSmooth, vtkImageMedian3D, vtkImageSobel3D, vtkImageThreshold, vtkMapper, vtkMarchingCubes, vtkMatrix4x4, vtkOutputWindow, vtkPiecewiseFunction, vtkPlanes, vtkPolyDataMapper, vtkTransform, vtkVolume, vtkVolumeProperty,VTK_INT
+from vtkmodules.vtkCommonCore import VTK_INT, vtkCommand, vtkDoubleArray, vtkOutputWindow
+from vtkmodules.vtkCommonDataModel import vtkBox, vtkImageData, vtkPiecewiseFunction, vtkPlanes
+from vtkmodules.vtkCommonExecutionModel import vtkAlgorithm
+from vtkmodules.vtkCommonMath import vtkMatrix4x4
+from vtkmodules.vtkCommonTransforms import vtkTransform
+from vtkmodules.vtkFiltersCore import vtkFlyingEdges3D, vtkMarchingCubes
+from vtkmodules.vtkFiltersSources import vtkCubeSource
+from vtkmodules.vtkImagingCore import vtkImageFlip, vtkImageThreshold
+from vtkmodules.vtkImagingGeneral import vtkImageGaussianSmooth, vtkImageMedian3D, vtkImageSobel3D
+from vtkmodules.vtkInteractionWidgets import vtkBoxWidget
+from vtkmodules.vtkRenderingCore import vtkActor, vtkColorTransferFunction, vtkMapper, vtkPolyDataMapper, vtkVolume, vtkVolumeProperty
+from vtkmodules.vtkRenderingVolume import vtkFixedPointVolumeRayCastMapper, vtkGPUVolumeRayCastMapper
 
 from core.Segment import Segment
 from utils.utils import save_numpy_arr_as_png, save_sitk_image, vtkImageToNumpyArr, vtkarrayToVtkImageData

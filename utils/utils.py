@@ -1,4 +1,5 @@
-from vtk import VTK_CHAR, vtkDataArray, vtkImageData, vtkVersion, VTK_INT
+from vtkmodules.vtkCommonCore import VTK_CHAR, VTK_INT, vtkDataArray, vtkVersion
+from vtkmodules.vtkCommonDataModel import vtkImageData
 from numpy import ndarray, ascontiguousarray
 from vtkmodules.util import numpy_support
 from SimpleITK import Image, GetArrayFromImage, GetImageFromArray,RescaleIntensity,Cast,sitkUInt16, WriteImage, sitkUInt8

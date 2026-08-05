@@ -4,7 +4,9 @@ import os
 
 import numpy as np
 import SimpleITK as sitk
-from vtk import vtkTrivialProducer, vtkImageData, VTK_SHORT, VTK_INT, VTK_FLOAT
+from vtkmodules.vtkCommonCore import VTK_FLOAT, VTK_INT, VTK_SHORT
+from vtkmodules.vtkCommonDataModel import vtkImageData
+from vtkmodules.vtkCommonExecutionModel import vtkTrivialProducer
 from vtkmodules.util import numpy_support
 
 

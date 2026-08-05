@@ -4,7 +4,8 @@ from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import Qt,QIcon
 from PySide6.QtCharts import QBarSet, QBarSeries, QChart, QChartView, QValueAxis
 from PySide6.QtWidgets import QApplication, QDoubleSpinBox, QColorDialog, QFileDialog, QLabel, QLayout, QMainWindow, QSlider, QVBoxLayout, QFileDialog, QWidget
-from vtk import vtkFileOutputWindow, vtkOutputWindow
+import utils.vtk_init  # noqa: F401  registers VTK's OpenGL object factories
+from vtkmodules.vtkCommonCore import vtkFileOutputWindow, vtkOutputWindow
 from app.HistogramWidget import HistogramWidget
 from app.LumenMainWindow2 import Ui_MainWindow
 from app.WelcomeWidget import WelcomeWidget

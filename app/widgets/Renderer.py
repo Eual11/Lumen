@@ -1,12 +1,21 @@
 from typing import List, Optional, TypedDict
 from PySide6.QtWidgets import QVBoxLayout, QWidget
 
+import utils.vtk_init  # noqa: F401  registers VTK's OpenGL object factories
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-import vtk
+from vtkmodules.vtkCommonCore import VTK_DOUBLE_MAX, vtkCommand, vtkDoubleArray
+from vtkmodules.vtkCommonDataModel import vtkPlanes
+from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkClipPolyData, vtkDecimatePro, vtkSmoothPolyDataFilter
+from vtkmodules.vtkFiltersModeling import vtkButterflySubdivisionFilter, vtkFillHolesFilter, vtkLinearSubdivisionFilter
+from vtkmodules.vtkIOGeometry import vtkOBJWriter, vtkSTLWriter
+from vtkmodules.vtkIOImage import vtkJPEGWriter, vtkPNGWriter
+from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
+from vtkmodules.vtkInteractionWidgets import vtkBoxWidget
+from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer, vtkVolume, vtkWindowToImageFilter
 
 class ActorInfo(TypedDict):
     name:str
-    box_widget: vtk.vtkBoxWidget
+    box_widget: vtkBoxWidget
     visible:bool
     transform_enabled:bool
 
@@ -18,7 +27,7 @@ class Renderer(QWidget):
         layout = QVBoxLayout()
 
         self.vtkInteractor = QVTKRenderWindowInteractor(self)
-        style = vtk.vtkInteractorStyleTrackballCamera()
+        style = vtkInteractorStyleTrackballCamera()
         self.vtkInteractor.SetInteractorStyle(style)
 
         layout.addWidget(self.vtkInteractor)
@@ -27,7 +36,7 @@ class Renderer(QWidget):
 
 
 
-        self.renderer = vtk.vtkRenderer()
+        self.renderer = vtkRenderer()
         self.renderer.GetActiveCamera().SetPosition(0,0,2)
         self.renderer.SetBackground(0.0,0.0,0.0);
         self.renderer.ResetCamera()
@@ -37,12 +46,12 @@ class Renderer(QWidget):
 
         self.interactor = self.vtkWindow.GetInteractor()
 
-        self.actors: dict[vtk.vtkActor, ActorInfo] = {}
-        self.selected_actor: Optional[vtk.vtkActor] = None
-        self.selected_volume: Optional[vtk.vtkVolume] = None
+        self.actors: dict[vtkActor, ActorInfo] = {}
+        self.selected_actor: Optional[vtkActor] = None
+        self.selected_volume: Optional[vtkVolume] = None
 
 
-        self.volumes: dict[vtk.vtkVolume, ActorInfo] = {}
+        self.volumes: dict[vtkVolume, ActorInfo] = {}
 
         self.interactor.Initialize()
         self.interactor.Start()
@@ -50,7 +59,7 @@ class Renderer(QWidget):
     def cleanup(self):
         if(self.vtkWindow):
             self.vtkWindow.Finalize()
-    def addActor(self, actor:vtk.vtkActor, box_widget:vtk.vtkBoxWidget):
+    def addActor(self, actor:vtkActor, box_widget:vtkBoxWidget):
         info:ActorInfo = {
             'name':'Actor',
             'box_widget': box_widget,
@@ -61,7 +70,7 @@ class Renderer(QWidget):
         self.renderer.AddActor(actor)
         self.renderer.ResetCamera()
         self.vtkWindow.Render()
-    def addVolume(self, volume: vtk.vtkVolume, box_widget:vtk.vtkBoxWidget):
+    def addVolume(self, volume: vtkVolume, box_widget:vtkBoxWidget):
         info:ActorInfo = {
             'name':'Actor',
             'box_widget': box_widget,
@@ -82,7 +91,7 @@ class Renderer(QWidget):
         if self.selected_actor:
             actor = self.selected_actor
             mapper = actor.GetMapper()
-            writer = vtk.vtkOBJWriter()
+            writer = vtkOBJWriter()
             source_filter = mapper.GetInputConnection(0,0).GetProducer()
             writer.SetFileName(filepath)
             writer.SetInputConnection(source_filter.GetOutputPort())
@@ -91,7 +100,7 @@ class Renderer(QWidget):
         if self.selected_actor:
             actor = self.selected_actor
             mapper = actor.GetMapper()
-            writer = vtk.vtkSTLWriter()
+            writer = vtkSTLWriter()
             source_filter = mapper.GetInputConnection(0,0).GetProducer()
             writer.SetFileName(filepath)
             writer.SetInputConnection(source_filter.GetOutputPort())
@@ -101,7 +110,7 @@ class Renderer(QWidget):
     def writeObj(self, filepath):
         if(not self.actors):
             return
-        appedMapper = vtk.vtkAppendPolyData()
+        appedMapper = vtkAppendPolyData()
 
         for actor in self.actors:
 
@@ -110,26 +119,26 @@ class Renderer(QWidget):
 
         appedMapper.Update()
 
-        writer = vtk.vtkOBJWriter()
+        writer = vtkOBJWriter()
         writer.SetFileName(filepath)
         writer.SetInputConnection(appedMapper.GetOutputPort())
         writer.Write()
 
     def writePNG(self, filepath="screenshot.png"):
-        png_filter = vtk.vtkWindowToImageFilter()
+        png_filter = vtkWindowToImageFilter()
         png_filter.SetInput(self.vtkWindow)
         png_filter.Update()
-        writer =  vtk.vtkPNGWriter()
+        writer =  vtkPNGWriter()
         writer.SetFileName(filepath)
         writer.SetInputConnection(png_filter.GetOutputPort())
 
         writer.Write()
 
     def writeJPG(self, filepath="screenshot.jpg"):
-        png_filter = vtk.vtkWindowToImageFilter()
+        png_filter = vtkWindowToImageFilter()
         png_filter.SetInput(self.vtkWindow)
         png_filter.Update()
-        writer =  vtk.vtkJPEGWriter()
+        writer =  vtkJPEGWriter()
         writer.SetFileName(filepath)
         writer.SetInputConnection(png_filter.GetOutputPort())
 
@@ -137,7 +146,7 @@ class Renderer(QWidget):
 
 
 
-    def set_actor_transform(self, actor:vtk.vtkActor, value:bool):
+    def set_actor_transform(self, actor:vtkActor, value:bool):
         info = self.actors[actor]
         info['transform_enabled'] = value
         if value:
@@ -145,7 +154,7 @@ class Renderer(QWidget):
         else:
             info['box_widget'].Off()
         
-    def set_actor_visibility(self, actor:vtk.vtkActor, value:bool):
+    def set_actor_visibility(self, actor:vtkActor, value:bool):
         info = self.actors[actor]
         info['visible'] = value
         actor.SetVisibility(value)
@@ -153,7 +162,7 @@ class Renderer(QWidget):
             info['box_widget'].Off()
         self.vtkWindow.Render()
 
-    def set_volume_transform(self, volume:vtk.vtkVolume, value:bool):
+    def set_volume_transform(self, volume:vtkVolume, value:bool):
         info = self.volumes[volume]
         info['transform_enabled'] = value
         if value:
@@ -162,7 +171,7 @@ class Renderer(QWidget):
             info['box_widget'].Off()
         self.vtkWindow.Render()
 
-    def set_volume_visibility(self, volume:vtk.vtkVolume, value:bool):
+    def set_volume_visibility(self, volume:vtkVolume, value:bool):
         info = self.volumes[volume]
         info['visible'] = value
         volume.SetVisibility(value)
@@ -172,13 +181,13 @@ class Renderer(QWidget):
         
     
 
-    def set_selected_actor(self,actor:vtk.vtkActor):
+    def set_selected_actor(self,actor:vtkActor):
         if actor and actor in self.actors:
             self.selected_actor = actor
         else:
             self.selected_actor = None
 
-    def set_selected_volume(self,volume:vtk.vtkVolume):
+    def set_selected_volume(self,volume:vtkVolume):
         if volume and volume in self.volumes:
             self.selected_volume = volume
         else:
@@ -197,7 +206,7 @@ class Renderer(QWidget):
             widget = info.get('box_widget')
             if widget:
                 widget.SetEnabled(False)
-                if widget.HasObserver(vtk.vtkCommand.InteractionEvent):
+                if widget.HasObserver(vtkCommand.InteractionEvent):
                     widget.RemoveAllObservers()
                 widget.SetInteractor(None)
             self.actors.pop(actor)
@@ -208,7 +217,7 @@ class Renderer(QWidget):
             widget = info.get('box_widget')
             if widget:
                 widget.SetEnabled(False)
-                if widget.HasObserver(vtk.vtkCommand.InteractionEvent):
+                if widget.HasObserver(vtkCommand.InteractionEvent):
                     widget.RemoveAllObservers()
                 widget.SetInteractor(None)
             self.volumes.pop(volume)
@@ -245,7 +254,7 @@ class Renderer(QWidget):
             source_filter = mapper.GetInputConnection(0,0).GetProducer()
             polydata = source_filter.GetOutputPort()
 
-            decimate = vtk.vtkDecimatePro()
+            decimate = vtkDecimatePro()
 
             decimate.SetInputConnection(polydata)
             decimate.SetTargetReduction(value)
@@ -255,11 +264,11 @@ class Renderer(QWidget):
                 decimate.PreserveTopologyOff()
                 decimate.SplittingOn()
                 decimate.BoundaryVertexDeletionOn()
-                decimate.SetMaximumError(vtk.VTK_DOUBLE_MAX)
+                decimate.SetMaximumError(VTK_DOUBLE_MAX)
 
             decimate.Update()
 
-            new_mapper = vtk.vtkPolyDataMapper()
+            new_mapper = vtkPolyDataMapper()
             new_mapper.SetInputConnection(decimate.GetOutputPort())
 
             new_mapper.SetScalarVisibility(0)
@@ -275,12 +284,12 @@ class Renderer(QWidget):
             source_filter = mapper.GetInputConnection(0,0).GetProducer()
             polydata = source_filter.GetOutputPort()
 
-            filler = vtk.vtkFillHolesFilter()
+            filler = vtkFillHolesFilter()
 
             filler.SetHoleSize(hole_radius)
             filler.SetInputConnection(polydata)
             filler.Update()
-            new_mapper = vtk.vtkPolyDataMapper()
+            new_mapper = vtkPolyDataMapper()
             new_mapper.SetInputConnection(filler.GetOutputPort())
 
             new_mapper.SetScalarVisibility(0)
@@ -300,12 +309,12 @@ class Renderer(QWidget):
             source_filter = mapper.GetInputConnection(0,0).GetProducer()
             polydata = source_filter.GetOutputPort()
 
-            smoother = vtk.vtkSmoothPolyDataFilter()
+            smoother = vtkSmoothPolyDataFilter()
             smoother.SetInputConnection(polydata)
             smoother.SetNumberOfIterations(20)
             smoother.Update()
 
-            new_mapper = vtk.vtkPolyDataMapper()
+            new_mapper = vtkPolyDataMapper()
             new_mapper.SetInputConnection(smoother.GetOutputPort())
 
             actor.SetMapper(new_mapper)
@@ -321,12 +330,12 @@ class Renderer(QWidget):
                 source_filter = mapper.GetInputConnection(0,0).GetProducer()
                 polydata = source_filter.GetOutputPort()
 
-                divider = vtk.vtkLinearSubdivisionFilter()
+                divider = vtkLinearSubdivisionFilter()
                 divider.SetInputConnection(polydata)
                 divider.SetNumberOfSubdivisions(2)
                 divider.Update()
 
-                new_mapper = vtk.vtkPolyDataMapper()
+                new_mapper = vtkPolyDataMapper()
                 new_mapper.SetInputConnection(divider.GetOutputPort())
 
                 actor.SetMapper(new_mapper)
@@ -343,22 +352,22 @@ class Renderer(QWidget):
                 polydata = source_filter.GetOutputPort()
 
 
-                butterfly_subdiv = vtk.vtkButterflySubdivisionFilter()
+                butterfly_subdiv = vtkButterflySubdivisionFilter()
 
                 butterfly_subdiv.SetInputData(polydata)
                 butterfly_subdiv.SetNumberOfSubdivisions(2)
                 butterfly_subdiv.Update()
 
-                new_mapper = vtk.vtkPolyDataMapper()
+                new_mapper = vtkPolyDataMapper()
                 new_mapper.SetInputConnection(butterfly_subdiv.GetOutputPort())
 
                 actor.SetMapper(new_mapper)
             except Exception as e:
                 print(f"Subdivision Error {e}")
 
-    def flip_clipping_planes(self,planes: vtk.vtkPlanes) -> vtk.vtkPlanes:
-        flipped_planes = vtk.vtkPlanes()
-        flipped_normals = vtk.vtkDoubleArray()
+    def flip_clipping_planes(self,planes: vtkPlanes) -> vtkPlanes:
+        flipped_planes = vtkPlanes()
+        flipped_normals = vtkDoubleArray()
         flipped_normals.SetNumberOfComponents(3)
         flipped_normals.SetNumberOfTuples(planes.GetNormals().GetNumberOfTuples())
 
@@ -381,10 +390,10 @@ class Renderer(QWidget):
             source_filter = mapper.GetInputConnection(0,0).GetProducer()
             polydata = source_filter.GetOutputPort()
 
-            clipper = vtk.vtkClipPolyData()
+            clipper = vtkClipPolyData()
             clipper.SetInputConnection(polydata)
 
-            planes = vtk.vtkPlanes()
+            planes = vtkPlanes()
             
             box_widget.GetPlanes(planes)
 
@@ -393,7 +402,7 @@ class Renderer(QWidget):
             clipper.Update()
             
 
-            new_mapper = vtk.vtkPolyDataMapper()
+            new_mapper = vtkPolyDataMapper()
             new_mapper.SetInputConnection(clipper.GetOutputPort())
 
             new_mapper.SetScalarVisibility(0)
@@ -454,7 +463,7 @@ class Renderer(QWidget):
             widget = info.get('box_widget')
             if widget:
                 widget.SetEnabled(False)
-                if widget.HasObserver(vtk.vtkCommand.InteractionEvent):
+                if widget.HasObserver(vtkCommand.InteractionEvent):
                     widget.RemoveAllObservers()
                 widget.SetInteractor(None)
 
@@ -463,7 +472,7 @@ class Renderer(QWidget):
             widget = info.get('box_widget')
             if widget:
                 widget.SetEnabled(False)
-                if widget.HasObserver(vtk.vtkCommand.InteractionEvent):
+                if widget.HasObserver(vtkCommand.InteractionEvent):
                     widget.RemoveAllObservers()
                 widget.SetInteractor(None)
 

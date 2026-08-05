@@ -1,6 +1,6 @@
 import SimpleITK as sitk
 from utils.utils import vtkImageToSITKImage
-from vtk import vtkImageData
+from vtkmodules.vtkCommonDataModel import vtkImageData
 import Segment
 
 """Abstractions for SITK Segementation Algorithms to work on Segements """

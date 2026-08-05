@@ -63,7 +63,11 @@ class DicomViewer(QWidget):
         self.extent = (0, 0, 0, 0, 0, 0)
         self.origin = (0.0, 0.0, 0.0)
 
+        # slice_index is the voxel index along z; slice_z is the same slice in
+        # world coordinates. They only coincide when the image origin is 0 and
+        # z spacing is 1, which is not true for real DICOM geometry.
         self.slice_index = 0
+        self.slice_z = 0.0
 
 
         self.segment_overlay_masks: dict[Segment, SegmentActorInfo] = {}
@@ -94,7 +98,8 @@ class DicomViewer(QWidget):
     def setSliceIdx(self, idx: int):
         if self.mapper:
             z = self.origin[2] + idx * self.spacing[2]
-            self.slice_index = z
+            self.slice_index = int(idx)
+            self.slice_z = z
 
             plane = vtk.vtkPlane()
             plane.SetOrigin(self.origin[0], self.origin[1], z)
@@ -131,7 +136,11 @@ class DicomViewer(QWidget):
         producer = output_port.GetProducer()
         producer.Update()
 
-        self.image_data:vtk.vtkImageData = producer.GetOutput()
+        # GetOutputDataObject rather than GetOutput: the producer is only an
+        # image filter once a filter has been added to the pipeline. With none,
+        # it is the source's vtkTrivialProducer, a plain vtkAlgorithm with no
+        # GetOutput. This form works for both and respects the port index.
+        self.image_data:vtk.vtkImageData = producer.GetOutputDataObject(output_port.GetIndex())
         self.spacing = self.image_data.GetSpacing()
         self.origin = self.image_data.GetOrigin()
         self.extent = self.image_data.GetExtent()
@@ -156,7 +165,7 @@ class DicomViewer(QWidget):
 
     def add_segment_overlay(self,segment:Segment):
         mapper = vtk.vtkImageResliceMapper()
-        img_data = numpyArrToVtkImageData(segment.mask, self.spacing, vtk.VTK_CHAR)
+        img_data = numpyArrToVtkImageData(segment.mask, self.spacing, vtk.VTK_CHAR, self.origin)
         mapper.SetInputData(img_data)
 
         mapper.SliceFacesCameraOff()
@@ -211,7 +220,7 @@ class DicomViewer(QWidget):
         if not segment_info:
             return
 
-        img_data = numpyArrToVtkImageData(segment.mask, self.spacing, vtk.VTK_CHAR)
+        img_data = numpyArrToVtkImageData(segment.mask, self.spacing, vtk.VTK_CHAR, self.origin)
 
         mapper = segment_info['actor'].GetMapper()
         mapper.SetInputData(img_data)
@@ -266,7 +275,9 @@ class DicomViewer(QWidget):
         x_pos,y_pos = obj.GetEventPosition()
         picker = vtk.vtkCellPicker()
         picker.SetTolerance(0.0005)
-        picker.Pick(x_pos,y_pos,self.slice_index, self.renderer)
+        # Third argument is a display-space z, not a slice: 0 is the convention
+        # for a 2D pick. The ray direction is what selects the cell.
+        picker.Pick(x_pos,y_pos,0.0, self.renderer)
 
         world_pos = picker.GetPickPosition()
 
@@ -291,7 +302,7 @@ class DicomViewer(QWidget):
        x_pos,y_pos = obj.GetEventPosition()
        picker = vtk.vtkCellPicker()
        picker.SetTolerance(0.0005)
-       picker.Pick(x_pos,y_pos,self.slice_index, self.renderer)
+       picker.Pick(x_pos,y_pos,0.0, self.renderer)
 
        world_pos = picker.GetPickPosition()
 
@@ -303,7 +314,7 @@ class DicomViewer(QWidget):
        if self.is_painting:
             self.paint_at_mouse(obj)
        if self.image_data:
-            value = self.image_data.GetScalarComponentAsFloat(x,y,int(self.slice_index),0)
+            value = self.image_data.GetScalarComponentAsFloat(x,y,self.slice_index,0)
             self.update_text_actor(x_pos,y_pos,str(value))
 
        #TODO: depending on the orgin interaction mode we will either, do nothing, paint on the mask or set seed positio
@@ -337,7 +348,7 @@ class DicomViewer(QWidget):
         x,y = obj.GetEventPosition()
         picker = vtk.vtkCellPicker()
         picker.SetTolerance(0.0005)
-        picker.Pick(x,y,self.slice_index, self.renderer)
+        picker.Pick(x,y,0.0, self.renderer)
 
         world_pos = picker.GetPickPosition()
 

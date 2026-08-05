@@ -1,5 +1,5 @@
 from vtk import VTK_CHAR, vtkDataArray, vtkImageData, vtkVersion, VTK_INT
-from numpy import ndarray
+from numpy import ndarray, ascontiguousarray
 from vtkmodules.util import numpy_support
 from SimpleITK import Image, GetArrayFromImage, GetImageFromArray,RescaleIntensity,Cast,sitkUInt16, WriteImage, sitkUInt8
 
@@ -68,14 +68,22 @@ def vtkarrayToVtkImageData(vtk_arr:vtkDataArray, shape, spacing, origin=(0,0,0))
 
 
 def SITKImageTOVtkImageData(sitk_img: Image)->vtkImageData:
-    numpy_arr = GetArrayFromImage(sitk_img)
+    numpy_arr = ascontiguousarray(GetArrayFromImage(sitk_img))
     numpy_shape = numpy_arr.shape
-    vtk_arr = numpy_support.numpy_to_vtk(numpy_arr.ravel(), deep=False, array_type=VTK_INT)
-    return vtkarrayToVtkImageData(vtk_arr, numpy_shape[::-1], sitk_img.GetSpacing())
-def numpyArrToVtkImageData(numpy_arr:ndarray,spacing, arr_type)->vtkImageData:
+    # Scalar type follows the array's dtype: forcing VTK_INT reinterprets float
+    # volumes as garbage. deep=True because ravel() may return a temporary.
+    vtk_arr = numpy_support.numpy_to_vtk(
+        numpy_arr.ravel(), deep=True,
+        array_type=numpy_support.get_vtk_array_type(numpy_arr.dtype),
+    )
+    return vtkarrayToVtkImageData(
+        vtk_arr, numpy_shape[::-1], sitk_img.GetSpacing(), sitk_img.GetOrigin()
+    )
+def numpyArrToVtkImageData(numpy_arr:ndarray,spacing, arr_type, origin=(0,0,0))->vtkImageData:
+    numpy_arr = ascontiguousarray(numpy_arr)
     numpy_shape = numpy_arr.shape
-    vtk_arr = numpy_support.numpy_to_vtk(numpy_arr.ravel(), deep=False, array_type=arr_type)
-    return vtkarrayToVtkImageData(vtk_arr, numpy_shape[::-1], spacing)
+    vtk_arr = numpy_support.numpy_to_vtk(numpy_arr.ravel(), deep=True, array_type=arr_type)
+    return vtkarrayToVtkImageData(vtk_arr, numpy_shape[::-1], spacing, origin)
 
 
 

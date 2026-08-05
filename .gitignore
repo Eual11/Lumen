@@ -3,3 +3,5 @@ __pycache__
 res/dicom
 test*
 *.obj
+build/lumen
+dist

@@ -1,12 +1,14 @@
 from typing import Optional
 from PySide6 import QtCore
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import Qt,QIcon
 from PySide6.QtCharts import QBarSet, QBarSeries, QChart, QChartView, QValueAxis
 from PySide6.QtWidgets import QApplication, QDoubleSpinBox, QColorDialog, QFileDialog, QLabel, QLayout, QMainWindow, QSlider, QVBoxLayout, QFileDialog, QWidget
+from vtk import vtkFileOutputWindow, vtkOutputWindow
 from app.HistogramWidget import HistogramWidget
 from app.LumenMainWindow2 import Ui_MainWindow
 from app.WelcomeWidget import WelcomeWidget
-from app.widgets import PBRMaterialWidget, SegmentControls, SegmentOperationsWidget, SegmentsTable
+from app.widgets import LumenSplashScreen, PBRMaterialWidget, SegmentControls, SegmentOperationsWidget, SegmentsTable
 from app.widgets.ActorControlWidget import ActorControls
 from app.widgets.ActorModifiersWidget import ActorModifiersWidget
 from app.widgets.ActorsTableWidget import ActorsTableWidget
@@ -20,6 +22,7 @@ from app.widgets.FillHolesDialog import create_fill_holes_dialog
 from app.widgets.DicomViewer import ViewerMode
 from app.widgets.PaintSettingsDialog import create_paint_settings_dialog
 import app.widgets.RCS_rc
+
 
 import sys
 from app.widgets.RegionGrowingDialog import create_region_grow_dialog
@@ -208,6 +211,7 @@ class LumenMainWindow(QMainWindow):
 
         # Segment Operations
         self.segment_operations.ui.thresholdBtn.clicked.connect(lambda:create_threshold_dialog(self.lumen_core))
+        self.segment_operations.ui.clearBtn.clicked.connect(lambda: self.lumen_core.clear_selected_segment())
         self.segment_operations.ui.paintBtn.clicked.connect(lambda: create_paint_settings_dialog(self.lumen_core))
         self.segment_operations.ui.eraseBtn.clicked.connect(lambda: create_erase_settings_dialog(self.lumen_core))
         self.segment_operations.ui.regionBtn.clicked.connect(lambda: create_region_grow_dialog(self.lumen_core))
@@ -221,7 +225,7 @@ class LumenMainWindow(QMainWindow):
         self.actors_table.set_selection_change_callback(self.actors_table_selection_change)
         self.volumes_table.set_selection_change_callback(self.volumes_table_selection_change)
         self.segments_table.setMinimumHeight(320)
-        self.segment_operations.setMinimumHeight(220)
+        self.segment_operations.setMinimumHeight(280)
 
         self.actors_table.setMinimumHeight(320)
 
@@ -326,8 +330,13 @@ class LumenMainWindow(QMainWindow):
 
     def load_volume_module(self):
         self.clear_layout(self.ui.content.layout())
-        self.volumes_table.setMinimumHeight(320)
+        self.volumes_table.setMaximumHeight(320)
         self.volume_control = ActorControls()
+        self.volume_control.ui.shadingComboBox.setVisible(False)
+        self.volume_control.ui.label.setVisible(False)
+        self.volume_control.ui.label_2.setVisible(False)
+        self.volume_control.ui.surfaceComboBox.setVisible(False)
+        self.volume_control.setMaximumHeight(64)
         layout = self.ui.content.layout()
 
         if layout:
@@ -343,10 +352,20 @@ class LumenMainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
+    # pipe vtk output errors to file
 
     app = QApplication([])
+    errOut = vtkFileOutputWindow()
+    errOut.SetFileName(".Lumen_Error.log")
+    vtkStdErrOut = vtkOutputWindow()
+    vtkStdErrOut.SetInstance(errOut)
+
+    splash = LumenSplashScreen.LumenSplashScreen(duration_ms=3000,text="Lumen is Initializing...")
 
     lumen = LumenMainWindow()
-    lumen.showMaximized()
-    lumen.show()
+
+    splash.show_for_duration(on_finish=lumen.showMaximized)
+
+
+    
     sys.exit(app.exec())

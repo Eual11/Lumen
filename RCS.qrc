@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="core">
+    <file>icons/icon-clear.png</file>
     <file>icons/meshHole.svg</file>
     <file>icons/3donly_view.svg</file>
     <file>icons/dualview.svg</file>

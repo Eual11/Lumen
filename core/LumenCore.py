@@ -141,6 +141,11 @@ class Lumen:
         if not selected_segment:
             return
         self.viewer.update_segment_mask(selected_segment)
+    def clear_selected_segment(self):
+        if self.selected_segment >=0 and self.selected_segment < len(self.segments):
+            segment = self.segments[self.selected_segment]
+            segment.mask.fill(0)
+            self.viewer.update_segment_mask(segment)
     def render_segment(self,idx:int, method:RenderMethods):
         if 0 <= idx < len(self.segments):
             segment = self.segments[idx]
@@ -151,8 +156,16 @@ class Lumen:
             dims = img.GetDimensions()
             img_arr = img_arr.reshape(dims[2], dims[1], dims[0])
             final_img = mask*img_arr
-            final_img_vtk_array =  numpy_support.numpy_to_vtk(final_img.ravel(), deep=False, array_type=VTK_INT)
-            final_vtk_img = vtkarrayToVtkImageData(final_img_vtk_array, shape,img.GetSpacing())
+            # Match the VTK scalar type to the array's own dtype -- forcing
+            # VTK_INT silently reinterprets float volumes as garbage. deep=True
+            # because ravel() may hand back a temporary VTK would outlive.
+            final_img = numpy.ascontiguousarray(final_img)
+            final_img_vtk_array = numpy_support.numpy_to_vtk(
+                final_img.ravel(),
+                deep=True,
+                array_type=numpy_support.get_vtk_array_type(final_img.dtype),
+            )
+            final_vtk_img = vtkarrayToVtkImageData(final_img_vtk_array, shape,img.GetSpacing(),img.GetOrigin())
             if method == RenderMethods.MARCHING_CUBES or method == RenderMethods.FLYING_EDGES:
                 iso_value = self.surface_iso_value
                 if "lower_threshold" in segment.meta_data:
@@ -165,9 +178,10 @@ class Lumen:
         else:
             raise IndexError
 
-    def load_image(self, path):
+    def load_image(self, path, series_uid=None):
 
-        self.loader.load_imge(path)
+        if not self.loader.load_imge(path, series_uid):
+            return False
 
         # create image processing pipeline
         self.image_pipeline = DymanicPipeline.DynamicPipeline(self.loader.get_output_port())
@@ -178,6 +192,12 @@ class Lumen:
 
         self.viewer.updateSource(self.image_pipeline.get_ouput_port())
         self.viewer.clear_segment_overlays()
+        return True
+
+    def scan_dicom_series(self, path):
+        """List the series available in a DICOM folder without loading them."""
+        return self.loader.scan_series(path)
+
     def get_pipeline_output_port(self):
         if(self.image_pipeline):
             return self.image_pipeline.get_ouput_port()
@@ -294,27 +314,43 @@ class Lumen:
     def get_image_range(self):
         if self.image_pipeline:
            img= self.image_pipeline.get_output_data()
-           arr = vtkImageToNumpyArr(img) 
-           return arr.min(), arr.max() 
+           arr = vtkImageToNumpyArr(img)
+           return float(arr.min()), float(arr.max())
         return 0,0
     def get_image_histogram(self,num_bins:int, n_samples:int):
+        """Sampled intensity histogram, returned as num_bins+1 counts.
+
+        Bins are computed by normalising against the full range rather than an
+        integer bin width: scalars may be float (rescale slope/intercept), and
+        a narrow range -- an ADC map spans roughly 0..4 -- would otherwise give
+        a bin width of zero and divide by it.
+        """
         if not self.image_pipeline:
             return []
-        img_min, img_max = self.get_image_range()
-        bin_width = (img_max-img_min+1) //num_bins
-        x,y,z = self.get_image_size()
-
-        img_arr = vtkImageToNumpyArr(self.image_pipeline.get_output_data())
 
         histogram_arr = [0]*(num_bins+1)
-        for _ in range(n_samples):
-            val = img_arr[randrange(z),randrange(y),randrange(x)]
-            idx =(val-img_min) // bin_width
-            if idx < len(histogram_arr):
-                histogram_arr[idx]+=1
+        if num_bins <= 0:
+            return histogram_arr
 
+        img_arr = vtkImageToNumpyArr(self.image_pipeline.get_output_data())
+        img_min, img_max = float(img_arr.min()), float(img_arr.max())
+        if not np.isfinite(img_min) or not np.isfinite(img_max) or img_max <= img_min:
+            return histogram_arr
 
-        return histogram_arr
+        flat = img_arr.ravel()
+        n_samples = max(0, min(int(n_samples), flat.size))
+        if n_samples == 0:
+            return histogram_arr
+
+        samples = flat if n_samples == flat.size else flat[
+            np.random.randint(0, flat.size, n_samples)
+        ]
+
+        idx = ((samples - img_min) / (img_max - img_min) * num_bins).astype(np.int64)
+        np.clip(idx, 0, num_bins, out=idx)
+        counts = np.bincount(idx, minlength=num_bins + 1)
+
+        return [int(c) for c in counts[:num_bins + 1]]
 
     def flip_clipping_planes(self,planes: vtkPlanes) -> vtkPlanes:
         flipped_planes = vtkPlanes()
